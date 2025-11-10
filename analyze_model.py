@@ -322,7 +322,9 @@ def run_dataset_analysis(args: argparse.Namespace) -> None:
         # Remap ground truth to binary if needed
         if true_mask.max() >= args.num_classes:
             true_binary = np.zeros_like(true_mask, dtype=np.uint8)
-            true_binary[true_mask > 0] = 1  # All instruments → class 1
+            # CholecSeg8k uses non-standard class IDs: 31=Grasper, 32=L-hook
+            instrument_pixels = (true_mask == 31) | (true_mask == 32)
+            true_binary[instrument_pixels] = 1
             true_mask = true_binary
 
         aggregate_cm += confusion_matrix_multiclass(true_mask, pred_mask, args.num_classes)
@@ -374,7 +376,9 @@ def run_dataset_analysis(args: argparse.Namespace) -> None:
         # Remap ground truth to binary
         if sample_true.max() >= args.num_classes:
             sample_true_binary = np.zeros_like(sample_true, dtype=np.uint8)
-            sample_true_binary[sample_true > 0] = 1
+            # CholecSeg8k uses non-standard class IDs: 31=Grasper, 32=L-hook
+            instrument_pixels = (sample_true == 31) | (sample_true == 32)
+            sample_true_binary[instrument_pixels] = 1
             sample_true = sample_true_binary
 
         preview = build_preview_image(sample_true, sample_pred, args.num_classes)

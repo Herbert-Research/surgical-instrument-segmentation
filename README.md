@@ -15,6 +15,129 @@ This codebase substantiates the translational premise that intraoperative guidan
 - **Content:** RGB frames (640×480), categorical masks (background, grasper, scissors placeholder), dataset manifest CSVs, and exported predictions in `data/preds`.
 - **Compliance:** Synthetic data contain no PHI. Public datasets (Cholec80, MICCAI EndoVis) remain de-identified and are cited per their licenses; this repository stores only reorganized derivatives. Prediction summaries are purely observational until IRB-approved clinical validation is complete.
 
+## Critical Dataset Note: CholecSeg8k Class ID Correction
+
+### Discrepancy Between Documentation and Implementation
+
+During empirical validation of the CholecSeg8k dataset, I identified a significant 
+discrepancy between the published documentation and the actual watershed mask encoding.
+
+**Published Documentation (Hong et al., 2020, Table I):**
+- Class 5: Grasper
+- Class 9: L-hook Electrocautery
+
+**Actual Watershed Mask Encoding (Empirically Verified):**
+- Class 31: Grasper
+- Class 32: L-hook Electrocautery
+
+### Impact and Resolution
+
+This encoding discrepancy caused initial training failures, as the model was learning 
+to segment liver ligament tissue (class 5) rather than surgical instruments. The 
+correction was identified through systematic pixel-value analysis of the watershed 
+masks and validated across multiple video sequences.
+
+**Corrected Class Mapping:**
+```python
+# Correct instrument detection for CholecSeg8k
+instrument_mask = (mask_array == 31) | (mask_array == 32)
+```
+
+### Complete Class ID Reference
+
+Based on empirical analysis, the CholecSeg8k watershed masks use the following encoding:
+
+| Class ID | Anatomical Structure / Instrument |
+|----------|-----------------------------------|
+| 0 | Ignore/Empty |
+| 5 | Liver Ligament |
+| 11 | Abdominal Wall |
+| 12 | Fat |
+| 13 | Gastrointestinal Tract |
+| 21 | Liver |
+| 22 | Gallbladder |
+| 23 | Connective Tissue |
+| 24 | Blood |
+| 25 | Cystic Duct |
+| **31** | **Grasper** (Instrument) |
+| **32** | **L-hook Electrocautery** (Instrument) |
+| 33 | Hepatic Vein |
+| 50 | Black Background |
+| 255 | Ignore/Border |
+
+### Validation Methodology
+
+The correct class IDs were determined through:
+1. Pixel value distribution analysis across multiple frames
+2. Cross-referencing with visual inspection of instrument presence
+3. Validation against expected instrument pixel ratios (<1% of frame area)
+
+This correction is essential for accurate ground truth labeling in binary 
+surgical instrument segmentation tasks.
+
+### Reference
+
+Hong, W.-Y., Kao, C.-L., Kuo, Y.-H., Wang, J.-R., Chang, W.-L., & Shih, C.-S. (2020). 
+CholecSeg8k: A Semantic Segmentation Dataset for Laparoscopic Cholecystectomy Based on 
+Cholec80. *arXiv:2012.12453*
+
+## Pipeline Architecture
+
+### Core Components
+
+1. **`instrument_segmentation.py`** - Primary training pipeline
+   - Fine-tunes DeepLabV3-ResNet50 on surgical instrument segmentation
+   - Implements data augmentation and class balancing
+   - Exports trained model weights (`instrument_segmentation_model.pth`)
+
+2. **`analyze_model.py`** - Model evaluation and visualization
+   - Generates performance metrics (IoU, Dice, precision, recall)
+   - Produces publication-quality figures for committee review
+   - Supports both single-model and comparative dataset analysis
+
+3. **`prepare_cholec80.py`** - Dataset preparation utility
+   - Extracts and resizes frames from raw Cholec80 MP4 videos
+   - Matches frames with corresponding CholecSeg8k mask annotations
+   - Outputs standardized frame/mask pairs and CSV manifest
+
+4. **`generate_masks_from_model.py`** - Automated mask generation
+   - Applies trained model to new surgical videos
+   - Generates predicted masks for unannotated footage
+   - Enables semi-supervised learning and rapid dataset expansion
+
+### Workflow Options
+
+**Option A: Training from Scratch (Annotated Data)**
+```bash
+# 1. Prepare dataset from raw videos with ground truth masks
+python prepare_cholec80.py \
+    --video-dir /path/to/Cholec80/videos \
+    --mask-dir /path/to/CholecSeg8k/masks \
+    --max-videos 3
+
+# 2. Train segmentation model
+python instrument_segmentation.py
+
+# 3. Generate analysis figures
+python analyze_model.py
+```
+
+**Option B: Transfer Learning (New Surgical Videos)**
+```bash
+# 1. Generate predicted masks using trained model
+python generate_masks_from_model.py \
+    --video-path /path/to/new_surgery.mp4 \
+    --model-path instrument_segmentation_model.pth \
+    --output-frame-dir data/sample_frames \
+    --output-mask-dir data/masks
+
+# 2. Fine-tune on predicted masks (semi-supervised)
+python instrument_segmentation.py
+
+# 3. Evaluate performance
+python analyze_model.py
+```
+
 ## Analytical Workflow
 `instrument_segmentation.py` and `analyze_model.py` execute three phases:
 1. **Schema validation** – verifies manifest headers (frame path, mask path, class taxonomy) before training proceeds.
@@ -47,7 +170,7 @@ python prepare_cholec80.py \
   --mask-dir  /path/to/CholecSeg8k/masks \
   --max-videos 3 \
   --frame-step 10
-
+ 
 # Compare exported predictions with masks
 python analyze_model.py \
   --mode dataset \
@@ -90,3 +213,9 @@ Cholec80 subsets courtesy of **Twinanda et al.** (MICCAI 2016) and KLASS video
 - Chen LC, Papandreou G, Schroff F, Adam H. Rethinking Atrous Convolution for Semantic Image Segmentation. *arXiv:1706.05587.*
 - Twinanda AP, Shehata S, Mutter D, *et al.* EndoNet: A Deep Architecture for Recognition Tasks on Laparoscopic Videos. *IEEE Trans Med Imaging.* 2017.
 - Allan M, Shvets A, Kurmann T, *et al.* 2019 Robotic Scene Segmentation Challenge. *arXiv:2101.01273.*
+- @dataset{CholecSeg8k,
+  author={W.-Y. Hong and C.-L. Kao and Y.-H. Kuo and J.-R. Wang and W.-L. Chang and C.-S. Shih},
+  title={CholecSeg8k: A Semantic Segmentation Dataset for Laparoscopic Cholecystectomy},
+  year={2020},
+  url={https://www.kaggle.com/datasets/newslab/cholecseg8k}
+}
