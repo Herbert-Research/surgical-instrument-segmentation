@@ -10,9 +10,12 @@ venv/
 ENV/
 env/
 
-# Model files (large trained models)
-*.pth
-*.pt
+# Model files - tracked by Git LFS (see .gitattributes)
+# Main model file (instrument_segmentation_model.pth) is tracked via Git LFS
+# Only ignore temporary checkpoints and cache files
+**/checkpoints/*.pth
+**/temp/*.pth
+**/cache/*.pt
 *.h5
 *.pkl
 *.ckpt
