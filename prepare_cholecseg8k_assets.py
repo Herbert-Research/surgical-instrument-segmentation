@@ -8,7 +8,7 @@ Uses watershed masks to ensure accurate pixel-level class labels for
 surgical instrument segmentation.
 
 Example usage:
-    python rename_cholec80_assets.py \
+    python prepare_cholecseg8k_assets.py \
         --frame-dir /path/to/frame_pngs \
         --mask-dir  /path/to/mask_pngs \
         --video-stem video01

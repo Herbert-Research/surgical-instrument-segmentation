@@ -1,8 +1,8 @@
 """
 Generate segmentation masks from surgical videos using the trained model.
 
-This script bridges the gap between raw videos and the training pipeline:
-1. Extracts frames from surgical videos (like prepare_cholec80.py)
+This script applies the trained model to new surgical videos:
+1. Extracts frames from surgical videos
 2. Uses the trained instrument_segmentation_model.pth to generate masks
 3. Outputs frames + predicted masks in the format expected by the training pipeline
 
@@ -101,14 +101,40 @@ def parse_args() -> argparse.Namespace:
 def load_model(model_path: Path, device: str) -> torch.nn.Module:
     """Load the trained segmentation model."""
     print(f"[INFO] Loading model from {model_path}")
-    model = deeplabv3_resnet50(num_classes=3, weights=None)
+    # Load with aux_classifier disabled for inference
+    model = deeplabv3_resnet50(num_classes=2, weights=None, aux_loss=False)
     
     # Handle both full model saves and state_dict saves
-    checkpoint = torch.load(model_path, map_location=device)
+    checkpoint = torch.load(model_path, map_location=device, weights_only=False)
+    
+    # Extract state_dict
     if isinstance(checkpoint, dict) and 'model_state_dict' in checkpoint:
-        model.load_state_dict(checkpoint['model_state_dict'])
+        state_dict = checkpoint['model_state_dict']
     else:
-        model.load_state_dict(checkpoint)
+        state_dict = checkpoint
+    
+    # Remove 'model.' prefix if present and filter out aux_classifier keys
+    new_state_dict = {}
+    for key, value in state_dict.items():
+        # Remove 'model.' prefix
+        if key.startswith('model.'):
+            new_key = key[6:]
+        else:
+            new_key = key
+        
+        # Skip aux_classifier layers (only used during training)
+        if 'aux_classifier' in new_key:
+            continue
+            
+        new_state_dict[new_key] = value
+    
+    # Load state dict
+    missing_keys, unexpected_keys = model.load_state_dict(new_state_dict, strict=False)
+    
+    if missing_keys:
+        print(f"[WARN] Missing keys: {missing_keys[:5]}...")  # Show first 5
+    if unexpected_keys:
+        print(f"[WARN] Unexpected keys: {unexpected_keys[:5]}...")  # Show first 5
     
     model = model.to(device)
     model.eval()
@@ -136,8 +162,7 @@ def predict_mask(
     
     Returns binary mask where:
     - 0 = background
-    - 1 = instrument (grasper)
-    - 2 = instrument (scissors/hook)
+    - 1 = instrument (any surgical instrument)
     """
     # Prepare image for model
     transform = transforms.Compose([
@@ -153,10 +178,18 @@ def predict_mask(
     # Run inference
     with torch.no_grad():
         output = model(input_batch)['out']
-        # Get class predictions
-        predictions = torch.argmax(output, dim=1).squeeze(0).cpu().numpy()
+        
+        # Apply softmax to get probabilities
+        probabilities = torch.softmax(output, dim=1).squeeze(0).cpu().numpy()
+        
+        # Get instrument class probability (class 1)
+        instrument_prob = probabilities[1]
+        
+        # Apply confidence threshold
+        predictions = (instrument_prob >= confidence_threshold).astype(np.uint8)
     
-    return predictions.astype(np.uint8)
+    # Scale to 0-255 for visibility (0=background black, 255=instrument white)
+    return predictions * 255
 
 
 def process_video(

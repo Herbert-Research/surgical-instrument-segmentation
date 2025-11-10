@@ -20,7 +20,7 @@ import seaborn as sns
 from PIL import Image
 
 DEFAULT_OUTPUT = Path("comprehensive_analysis.png")
-DEFAULT_CLASS_NAMES = ["background", "grasper", "scissors"]
+DEFAULT_CLASS_NAMES = ["background", "instrument"]
 
 
 def binary_confusion_matrix(true_labels, pred_labels):
@@ -82,8 +82,8 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--num-classes",
         type=int,
-        default=3,
-        help="Number of segmentation classes (background + instruments).",
+        default=2,
+        help="Number of segmentation classes (background + instruments). Default is 2 for binary segmentation.",
     )
     parser.add_argument(
         "--class-names",
@@ -117,7 +117,7 @@ def load_mask_prediction_pairs(
 
     if not mask_dir.exists():
         raise FileNotFoundError(
-            f"Mask directory '{mask_dir}' not found. Run prepare_cholec80.py or point"
+            f"Mask directory '{mask_dir}' not found. Run prepare_cholecseg8k_assets.py or point"
             " --mask-dir to a valid location."
         )
     if not pred_dir.exists():

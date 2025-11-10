@@ -266,7 +266,7 @@ class SurgicalDataset(torch.utils.data.Dataset):
         if not os.path.exists(mask_path):
             raise FileNotFoundError(
                 f"No mask found for {frame_name}. Expected: {mask_name}\n"
-                f"Make sure you've run rename_cholec80_assets.py to prepare the dataset."
+                f"Make sure you've run prepare_cholecseg8k_assets.py to prepare the dataset."
             )
         
         frame = Image.open(frame_path).convert('RGB')
