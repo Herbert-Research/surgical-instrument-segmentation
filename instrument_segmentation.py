@@ -136,19 +136,15 @@ def create_synthetic_surgical_frames(frame_dir: Path, mask_dir: Path, force: boo
     
     rng = np.random.default_rng(DEFAULT_DATA_SEED)
     
-    # Create 20 synthetic frames
     for i in range(TOTAL_SYNTHETIC_FRAMES):
-        # Simulate surgical field (reddish tissue-like background)
         frame = np.zeros((480, 640, 3), dtype=np.uint8)
-        frame[:, :, 0] = rng.integers(80, 120, (480, 640))   # Blue channel
-        frame[:, :, 1] = rng.integers(60, 100, (480, 640))   # Green channel  
-        frame[:, :, 2] = rng.integers(120, 180, (480, 640))  # Red channel (higher for tissue)
+        frame[:, :, 0] = rng.integers(80, 120, (480, 640))
+        frame[:, :, 1] = rng.integers(60, 100, (480, 640))
+        frame[:, :, 2] = rng.integers(120, 180, (480, 640))
         
-        # Add some texture
         noise = rng.normal(0, 15, (480, 640, 3))
         frame = np.clip(frame + noise, 0, 255).astype(np.uint8)
 
-        # Simulate cautery smoke / specular highlights as occlusions
         if rng.random() < 0.35:
             occ_w = int(rng.integers(60, 160))
             occ_h = int(rng.integers(40, 120))
@@ -163,10 +159,8 @@ def create_synthetic_surgical_frames(frame_dir: Path, mask_dir: Path, force: boo
                 255,
             ).astype(np.uint8)
         
-        # Simulate instruments (metallic - brighter regions)
-        # Instrument 1 (grasper)
         mask = np.zeros((480, 640), dtype=np.uint8)
-        if i < 15:  # Present in most frames
+        if i < 15:
             cv2.ellipse(frame, (200, 240), (80, 15), 45, 0, 360, (200, 200, 210), -1)
             cv2.ellipse(frame, (200, 240), (80, 15), 45, 0, 360, (180, 180, 190), 3)
             cv2.ellipse(
@@ -180,7 +174,6 @@ def create_synthetic_surgical_frames(frame_dir: Path, mask_dir: Path, force: boo
                 -1,
             )
         
-        # Instrument 2 (scissors)
         if i < 12:
             cv2.ellipse(frame, (440, 300), (60, 12), -30, 0, 360, (190, 195, 205), -1)
             cv2.ellipse(frame, (440, 300), (60, 12), -30, 0, 360, (170, 175, 185), 3)
@@ -195,13 +188,11 @@ def create_synthetic_surgical_frames(frame_dir: Path, mask_dir: Path, force: boo
                 -1,
             )
         
-        # Occasional desaturation for simulated fogging
         if rng.random() < 0.25:
             frame = cv2.cvtColor(frame, cv2.COLOR_RGB2HSV)
             frame[:, :, 1] = np.clip(frame[:, :, 1] * rng.uniform(0.6, 0.9), 0, 255)
             frame = cv2.cvtColor(frame, cv2.COLOR_HSV2RGB)
         
-        # Save
         cv2.imwrite(str(frame_dir / f"frame_{i:03d}.png"), frame)
         cv2.imwrite(str(mask_dir / f"mask_{i:03d}.png"), mask)
     
@@ -221,12 +212,10 @@ class InstrumentSegmentationModel(nn.Module):
     def __init__(self, num_classes: int = NUM_CLASSES):
         super(InstrumentSegmentationModel, self).__init__()
         
-        # Load pre-trained DeepLabV3 with ResNet50
         self.model = torchvision.models.segmentation.deeplabv3_resnet50(
             weights=torchvision.models.segmentation.DeepLabV3_ResNet50_Weights.DEFAULT
         )
         
-        # Modify final layer for project-specific classes
         self.model.classifier[4] = nn.Conv2d(256, num_classes, kernel_size=1)
         
         print("✓ Model initialized: DeepLabV3-ResNet50")
@@ -270,8 +259,15 @@ class SurgicalDataset(torch.utils.data.Dataset):
     def __getitem__(self, idx):
         frame_name = self.frames[idx]
         frame_path = os.path.join(self.frame_dir, frame_name)
+        
         mask_name = frame_name.replace('frame', 'mask')
         mask_path = os.path.join(self.mask_dir, mask_name)
+        
+        if not os.path.exists(mask_path):
+            raise FileNotFoundError(
+                f"No mask found for {frame_name}. Expected: {mask_name}\n"
+                f"Make sure you've run prepare_cholecseg8k_assets.py to prepare the dataset."
+            )
         
         frame = Image.open(frame_path).convert('RGB')
         mask = Image.open(mask_path).convert('L')
@@ -290,16 +286,14 @@ class SurgicalDataset(torch.utils.data.Dataset):
             ])(frame)
         
         mask_array = np.array(mask, dtype=np.int16)
-        if mask_array.max() >= NUM_CLASSES or mask_array.min() < 0:
-            # CholecSeg8k masks often use arbitrary values (e.g., 255) for instruments.
-            # Collapse everything >0 into the first instrument class to avoid index errors.
-            remapped = np.zeros_like(mask_array, dtype=np.uint8)
-            remapped[mask_array > 0] = 1
-            mask_array = remapped
-        else:
-            mask_array = mask_array.astype(np.uint8)
-
-        mask_tensor = torch.from_numpy(mask_array).long()
+        
+        # CholecSeg8k uses non-standard class IDs (not matching paper Table I):
+        # Class 31 = Grasper, Class 32 = L-hook Electrocautery
+        remapped = np.zeros_like(mask_array, dtype=np.uint8)
+        instrument_mask = (mask_array == 31) | (mask_array == 32)
+        remapped[instrument_mask] = 1
+        
+        mask_tensor = torch.from_numpy(remapped).long()
         
         return frame, mask_tensor
     
@@ -328,7 +322,7 @@ class SurgicalDataset(torch.utils.data.Dataset):
 def train_model(
     model,
     train_loader,
-    num_epochs=20,
+    num_epochs=15,
     learning_rate=0.001,
     num_classes: int = NUM_CLASSES,
 ):
@@ -359,11 +353,9 @@ def train_model(
                 frames = frames.to(device)
                 masks = masks.to(device)
                 
-                # Forward pass
                 outputs = model(frames)
                 loss = criterion(outputs, masks)
                 
-                # Backward pass
                 optimizer.zero_grad()
                 loss.backward()
                 optimizer.step()
@@ -527,13 +519,11 @@ def main():
     mask_dir = args.mask_dir.resolve()
     prediction_dir = args.prediction_dir.resolve()
 
-    # Step 1: Create synthetic data (in real use, load actual surgical videos)
     seed_everything()
     data_created = False
     if not args.skip_synthetic:
         data_created = create_synthetic_surgical_frames(frame_dir, mask_dir)
 
-    # Step 2: Define transforms
     train_transform = transforms.Compose([
         transforms.Resize((256, 256)),
         transforms.ColorJitter(brightness=0.2, contrast=0.2, saturation=0.1, hue=0.02),
@@ -547,7 +537,6 @@ def main():
         transforms.Normalize(mean=IMAGENET_MEAN, std=IMAGENET_STD),
     ])
 
-    # Step 3: Create dataset splits with paired augmentations for training only
     all_frames = sorted(p.name for p in frame_dir.glob('*.png'))
     if not all_frames:
         raise FileNotFoundError(
@@ -600,20 +589,17 @@ def main():
     if not data_created:
         print("  - Note: Existing frames detected; synthetic generation skipped")
     
-    # Step 4: Initialize model
     model = InstrumentSegmentationModel(num_classes=NUM_CLASSES)
     
-    # Step 5: Train model (reduced epochs for demo)
     print("\nStarting training...")
     model, losses = train_model(
         model,
         train_loader,
-        num_epochs=20,
+        num_epochs=15,
         learning_rate=0.001,
         num_classes=NUM_CLASSES,
     )
     
-    # Step 6: Plot training loss
     fig = plt.figure(figsize=(10, 6))
     plt.plot(range(1, len(losses)+1), losses, 'o-', linewidth=2, markersize=8)
     plt.xlabel('Epoch', fontsize=12)
@@ -624,7 +610,6 @@ def main():
     fig.savefig('training_loss.png', dpi=300, bbox_inches='tight')
     plt.close(fig)
     
-    # Step 7: Evaluate on validation set
     print("\nEvaluating model on validation set...")
     evaluate_model(
         model,
@@ -633,7 +618,6 @@ def main():
         prediction_dir=prediction_dir,
     )
     
-    # Step 8: Save model
     torch.save(model.state_dict(), 'instrument_segmentation_model.pth')
     print("✓ Model saved: instrument_segmentation_model.pth")
     

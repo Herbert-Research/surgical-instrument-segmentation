@@ -20,7 +20,7 @@ import seaborn as sns
 from PIL import Image
 
 DEFAULT_OUTPUT = Path("comprehensive_analysis.png")
-DEFAULT_CLASS_NAMES = ["background", "grasper", "scissors"]
+DEFAULT_CLASS_NAMES = ["background", "instrument"]
 
 
 def binary_confusion_matrix(true_labels, pred_labels):
@@ -82,8 +82,8 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--num-classes",
         type=int,
-        default=3,
-        help="Number of segmentation classes (background + instruments).",
+        default=2,
+        help="Number of segmentation classes (background + instruments). Default is 2 for binary segmentation.",
     )
     parser.add_argument(
         "--class-names",
@@ -117,7 +117,7 @@ def load_mask_prediction_pairs(
 
     if not mask_dir.exists():
         raise FileNotFoundError(
-            f"Mask directory '{mask_dir}' not found. Run prepare_cholec80.py or point"
+            f"Mask directory '{mask_dir}' not found. Run prepare_cholecseg8k_assets.py or point"
             " --mask-dir to a valid location."
         )
     if not pred_dir.exists():
@@ -322,7 +322,9 @@ def run_dataset_analysis(args: argparse.Namespace) -> None:
         # Remap ground truth to binary if needed
         if true_mask.max() >= args.num_classes:
             true_binary = np.zeros_like(true_mask, dtype=np.uint8)
-            true_binary[true_mask > 0] = 1  # All instruments → class 1
+            # CholecSeg8k uses non-standard class IDs: 31=Grasper, 32=L-hook
+            instrument_pixels = (true_mask == 31) | (true_mask == 32)
+            true_binary[instrument_pixels] = 1
             true_mask = true_binary
 
         aggregate_cm += confusion_matrix_multiclass(true_mask, pred_mask, args.num_classes)
@@ -368,18 +370,36 @@ def run_dataset_analysis(args: argparse.Namespace) -> None:
 
     ax_preview = fig.add_subplot(gs[1, :])
     if pairs:
-        sample_true = pairs[0]["true"].copy()
-        sample_pred = pairs[0]["pred"].copy()
+        # Find a frame with instruments (not an empty frame)
+        selected_idx = 0
+        max_instrument_pixels = 0
+        
+        for idx, pair in enumerate(pairs):
+            temp_true = pair["true"].copy()
+            # Check for instrument pixels
+            if temp_true.max() >= args.num_classes:
+                instrument_pixels = ((temp_true == 31) | (temp_true == 32)).sum()
+            else:
+                instrument_pixels = (temp_true == 1).sum()
+            
+            if instrument_pixels > max_instrument_pixels:
+                max_instrument_pixels = instrument_pixels
+                selected_idx = idx
+        
+        sample_true = pairs[selected_idx]["true"].copy()
+        sample_pred = pairs[selected_idx]["pred"].copy()
 
         # Remap ground truth to binary
         if sample_true.max() >= args.num_classes:
             sample_true_binary = np.zeros_like(sample_true, dtype=np.uint8)
-            sample_true_binary[sample_true > 0] = 1
+            # CholecSeg8k uses non-standard class IDs: 31=Grasper, 32=L-hook
+            instrument_pixels = (sample_true == 31) | (sample_true == 32)
+            sample_true_binary[instrument_pixels] = 1
             sample_true = sample_true_binary
 
         preview = build_preview_image(sample_true, sample_pred, args.num_classes)
         ax_preview.imshow(preview)
-        ax_preview.set_title(f"Sample {pairs[0]['name']} (GT | Pred)", fontweight="bold")
+        ax_preview.set_title(f"Sample {pairs[selected_idx]['name']} (GT | Pred) - {max_instrument_pixels} instrument pixels", fontweight="bold")
         ax_preview.axis("off")
     else:
         ax_preview.text(
