@@ -595,7 +595,7 @@ def main():
     model, losses = train_model(
         model,
         train_loader,
-        num_epochs=20,
+        num_epochs=10,
         learning_rate=0.001,
         num_classes=NUM_CLASSES,
     )
