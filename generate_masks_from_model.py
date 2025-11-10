@@ -145,13 +145,14 @@ def predict_mask(
         transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
     ])
     
-    # Convert to PIL for transforms
+    # Convert to PIL and apply transforms (returns tensor)
     pil_image = Image.fromarray(frame_rgb)
-    input_tensor = transform(pil_image).unsqueeze(0).to(device)
+    input_tensor = transform(pil_image)
+    input_batch = input_tensor.unsqueeze(0).to(device)  # type: ignore[union-attr]
     
     # Run inference
     with torch.no_grad():
-        output = model(input_tensor)['out']
+        output = model(input_batch)['out']
         # Get class predictions
         predictions = torch.argmax(output, dim=1).squeeze(0).cpu().numpy()
     
