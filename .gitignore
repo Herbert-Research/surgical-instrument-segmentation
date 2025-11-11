@@ -28,6 +28,7 @@ frame_data/
 preds/
 predictions/
 results/
+outputs/
 
 # Development
 .vscode/

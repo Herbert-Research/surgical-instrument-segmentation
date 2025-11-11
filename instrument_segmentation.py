@@ -1,8 +1,10 @@
 """
-Surgical Instrument Segmentation using Deep Learning
+Laparoscopic Instrument Segmentation using Deep Learning
 Author: Maximilian Dressler
-Purpose: Demonstrate transfer learning for surgical video analysis relevant to 
-         KLASS-standardized gastrectomy monitoring and quality assessment
+Purpose: Automated surgical instrument segmentation for laparoscopic surgery
+         quality assessment. Technical foundation for procedure-specific
+         applications including gastrectomy, cholecystectomy, and other
+         minimally invasive procedures.
 """
 
 import argparse
@@ -628,10 +630,11 @@ def main():
     print("  - segmentation_results.png (visual comparison)")
     print("  - training_loss.png (learning curve)")
     print("  - instrument_segmentation_model.pth (trained weights)")
-    print("\nRelevance to KLASS Research:")
-    print("  → Instrument tracking enables automated quality assessment")
-    print("  → Frame-by-frame segmentation supports surgical phase recognition")
-    print("  → Foundation for station-specific guidance overlay systems")
+    print("\nClinical Applications:")
+    print("  → Automated instrument tracking for objective skill assessment")
+    print("  → Frame-by-frame segmentation enables surgical phase recognition")
+    print("  → Foundation for real-time guidance systems across procedures")
+    print("  → Extensible to gastrectomy, colorectal, and other laparoscopic surgeries")
 
 if __name__ == "__main__":
     main()
