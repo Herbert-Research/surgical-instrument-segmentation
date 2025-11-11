@@ -23,7 +23,8 @@ class InstrumentSegmentationModel(torch.nn.Module):
         self.model = torchvision.models.segmentation.deeplabv3_resnet50(
             weights=None
         )
-        self.model.classifier[4] = torch.nn.Conv2d(256, num_classes, kernel_size=1)
+        # Modify the classifier head for our number of classes
+        self.model.classifier[4] = torch.nn.Conv2d(256, num_classes, kernel_size=1)  # type: ignore
         
     def forward(self, x):
         return self.model(x)['out']
@@ -115,7 +116,8 @@ def generate_visualization(
             
             # Load and process frame
             frame_pil = Image.open(frame_path).convert('RGB')
-            frame_tensor = eval_transform(frame_pil).unsqueeze(0).to(device)
+            frame_tensor: torch.Tensor = eval_transform(frame_pil)  # type: ignore
+            frame_tensor = frame_tensor.unsqueeze(0).to(device)
             
             # Get prediction
             output = model(frame_tensor)
