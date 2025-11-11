@@ -54,16 +54,10 @@ def parse_args() -> argparse.Namespace:
         help="Path to trained segmentation model weights.",
     )
     parser.add_argument(
-        "--output-frame-dir",
+        "--output-dir",
         type=Path,
-        default=Path("data/sample_frames"),
-        help="Directory to save extracted frames.",
-    )
-    parser.add_argument(
-        "--output-mask-dir",
-        type=Path,
-        default=Path("data/masks"),
-        help="Directory to save predicted masks.",
+        default=Path("data/generated_output"),
+        help="Directory to save both frames and masks together.",
     )
     parser.add_argument(
         "--frame-step",
@@ -195,8 +189,7 @@ def predict_mask(
 def process_video(
     video_path: Path,
     model: torch.nn.Module,
-    output_frame_dir: Path,
-    output_mask_dir: Path,
+    output_dir: Path,
     device: str,
     frame_step: int,
     long_side: int,
@@ -205,9 +198,8 @@ def process_video(
 ) -> int:
     """Extract frames and generate masks from video."""
     
-    # Ensure output directories exist
-    output_frame_dir.mkdir(parents=True, exist_ok=True)
-    output_mask_dir.mkdir(parents=True, exist_ok=True)
+    # Ensure output directory exists
+    output_dir.mkdir(parents=True, exist_ok=True)
     
     # Open video
     cap = cv2.VideoCapture(str(video_path))
@@ -241,14 +233,16 @@ def process_video(
         # Generate mask using model
         mask = predict_mask(model, frame_rgb, device, confidence_threshold)
         
-        # Save frame
-        frame_name = f"{video_stem}_frame_{frame_idx:06d}.png"
-        frame_path = output_frame_dir / frame_name
-        cv2.imwrite(str(frame_path), cv2.cvtColor(frame_rgb, cv2.COLOR_RGB2BGR))
+        # Save frame and mask with names that sort together
+        # Format: video01_000001_frame.png, video01_000001_mask.png
+        base_name = f"{video_stem}_{saved_count:06d}"
+        frame_name = f"{base_name}_frame.png"
+        mask_name = f"{base_name}_mask.png"
         
-        # Save mask
-        mask_name = f"{video_stem}_mask_{frame_idx:06d}.png"
-        mask_path = output_mask_dir / mask_name
+        frame_path = output_dir / frame_name
+        mask_path = output_dir / mask_name
+        
+        cv2.imwrite(str(frame_path), cv2.cvtColor(frame_rgb, cv2.COLOR_RGB2BGR))
         cv2.imwrite(str(mask_path), mask)
         
         saved_count += 1
@@ -278,8 +272,7 @@ def main() -> None:
     frames_saved = process_video(
         video_path=args.video_path,
         model=model,
-        output_frame_dir=args.output_frame_dir,
-        output_mask_dir=args.output_mask_dir,
+        output_dir=args.output_dir,
         device=args.device,
         frame_step=args.frame_step,
         long_side=args.long_side,
@@ -289,8 +282,9 @@ def main() -> None:
     
     print(f"\n✓ Processing complete!")
     print(f"  Frames saved: {frames_saved}")
-    print(f"  Frames directory: {args.output_frame_dir}")
-    print(f"  Masks directory:  {args.output_mask_dir}")
+    print(f"  Output directory: {args.output_dir}")
+    print(f"  Files are named: videoXX_NNNNNN_frame.png and videoXX_NNNNNN_mask.png")
+    print(f"  (sorted alphabetically, frames and masks alternate)")
     print(f"\nThese outputs can now be used with instrument_segmentation.py for:")
     print(f"  - Fine-tuning on new surgical procedures")
     print(f"  - Bootstrapping semi-supervised annotation")

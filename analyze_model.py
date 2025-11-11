@@ -370,8 +370,24 @@ def run_dataset_analysis(args: argparse.Namespace) -> None:
 
     ax_preview = fig.add_subplot(gs[1, :])
     if pairs:
-        sample_true = pairs[0]["true"].copy()
-        sample_pred = pairs[0]["pred"].copy()
+        # Find a frame with instruments (not an empty frame)
+        selected_idx = 0
+        max_instrument_pixels = 0
+        
+        for idx, pair in enumerate(pairs):
+            temp_true = pair["true"].copy()
+            # Check for instrument pixels
+            if temp_true.max() >= args.num_classes:
+                instrument_pixels = ((temp_true == 31) | (temp_true == 32)).sum()
+            else:
+                instrument_pixels = (temp_true == 1).sum()
+            
+            if instrument_pixels > max_instrument_pixels:
+                max_instrument_pixels = instrument_pixels
+                selected_idx = idx
+        
+        sample_true = pairs[selected_idx]["true"].copy()
+        sample_pred = pairs[selected_idx]["pred"].copy()
 
         # Remap ground truth to binary
         if sample_true.max() >= args.num_classes:
@@ -383,7 +399,7 @@ def run_dataset_analysis(args: argparse.Namespace) -> None:
 
         preview = build_preview_image(sample_true, sample_pred, args.num_classes)
         ax_preview.imshow(preview)
-        ax_preview.set_title(f"Sample {pairs[0]['name']} (GT | Pred)", fontweight="bold")
+        ax_preview.set_title(f"Sample {pairs[selected_idx]['name']} (GT | Pred) - {max_instrument_pixels} instrument pixels", fontweight="bold")
         ax_preview.axis("off")
     else:
         ax_preview.text(

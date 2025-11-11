@@ -19,6 +19,11 @@ data/
 datasets/
 frame_data/
 
+# Allow statistics and analysis PNG files
+!*_statistics.png
+!*_visual_analysis.png
+!*_analysis.png
+
 # Outputs
 preds/
 predictions/
