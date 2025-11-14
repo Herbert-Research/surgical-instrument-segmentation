@@ -370,3 +370,923 @@ url={https://www.kaggle.com/datasets/newslab/cholecseg8k}
 ```
 
 **Author:** Maximilian Herbert Dressler
+
+
+
+
+
+COMPARATIVE MODEL TRAINING
+======================================================================
+Models: unet, deeplabv3
+Epochs: 15
+Device: cuda
+
+Dataset: 6464 train, 1616 val
+
+======================================================================
+Training UNET
+======================================================================
+✓ U-Net initialized: 17,263,042 parameters
+Epoch 1/15:   0%|                                                                  | 0/1616 [00:00<?, ?it/s]Surgical Instrument Segmentation Pipeline
+======================================================================
+PyTorch version: 2.5.1+cu121
+CUDA available: True
+======================================================================
+Surgical Instrument Segmentation Pipeline
+======================================================================
+PyTorch version: 2.5.1+cu121
+CUDA available: True
+======================================================================
+Surgical Instrument Segmentation Pipeline
+======================================================================
+PyTorch version: 2.5.1+cu121
+CUDA available: True
+======================================================================
+Surgical Instrument Segmentation Pipeline
+======================================================================
+PyTorch version: 2.5.1+cu121
+CUDA available: True
+======================================================================
+Epoch 1/15: 100%|██████████████████████████████████████████| 1616/1616 [32:04<00:00,  1.19s/it, loss=0.0615]
+Epoch 2/15:   0%|                                                                  | 0/1616 [00:00<?, ?it/sS 
+urgical Instrument Segmentation Pipeline
+======================================================================
+PyTorch version: 2.5.1+cu121
+CUDA available: True
+======================================================================
+Surgical Instrument Segmentation Pipeline
+======================================================================
+PyTorch version: 2.5.1+cu121
+CUDA available: True
+======================================================================
+Surgical Instrument Segmentation Pipeline
+======================================================================
+PyTorch version: 2.5.1+cu121
+CUDA available: True
+======================================================================
+Surgical Instrument Segmentation Pipeline
+======================================================================
+PyTorch version: 2.5.1+cu121
+CUDA available: True
+======================================================================
+Epoch 2/15: 100%|██████████████████████████████████████████| 1616/1616 [32:41<00:00,  1.21s/it, loss=0.0680]
+Epoch 3/15:   0%|                                                                  | 0/1616 [00:00<?, ?it/sS 
+urgical Instrument Segmentation Pipeline
+======================================================================
+PyTorch version: 2.5.1+cu121
+CUDA available: True
+======================================================================
+Surgical Instrument Segmentation Pipeline
+======================================================================
+PyTorch version: 2.5.1+cu121
+CUDA available: True
+======================================================================
+Surgical Instrument Segmentation Pipeline
+======================================================================
+PyTorch version: 2.5.1+cu121
+CUDA available: True
+======================================================================
+Surgical Instrument Segmentation Pipeline
+======================================================================
+PyTorch version: 2.5.1+cu121
+CUDA available: True
+======================================================================
+Epoch 3/15: 100%|██████████████████████████████████████████| 1616/1616 [32:23<00:00,  1.20s/it, loss=0.0279] 
+Epoch 4/15:   0%|                                                                  | 0/1616 [00:00<?, ?it/s]Surgical Instrument Segmentation Pipeline
+======================================================================
+PyTorch version: 2.5.1+cu121
+CUDA available: True
+======================================================================
+Surgical Instrument Segmentation Pipeline
+======================================================================
+PyTorch version: 2.5.1+cu121
+CUDA available: True
+======================================================================
+Surgical Instrument Segmentation Pipeline
+======================================================================
+PyTorch version: 2.5.1+cu121
+CUDA available: True
+======================================================================
+Surgical Instrument Segmentation Pipeline
+======================================================================
+PyTorch version: 2.5.1+cu121
+CUDA available: True
+======================================================================
+Epoch 4/15: 100%|██████████████████████████████████████████| 1616/1616 [32:22<00:00,  1.20s/it, loss=0.0432]
+Epoch 5/15:   0%|                                                                  | 0/1616 [00:00<?, ?it/s]Surgical Instrument Segmentation Pipeline
+======================================================================
+PyTorch version: 2.5.1+cu121
+CUDA available: True
+======================================================================
+Surgical Instrument Segmentation Pipeline
+======================================================================
+PyTorch version: 2.5.1+cu121
+CUDA available: True
+======================================================================
+Surgical Instrument Segmentation Pipeline
+======================================================================
+PyTorch version: 2.5.1+cu121
+CUDA available: True
+======================================================================
+Surgical Instrument Segmentation Pipeline
+======================================================================
+PyTorch version: 2.5.1+cu121
+CUDA available: True
+======================================================================
+Epoch 5/15: 100%|██████████████████████████████████████████| 1616/1616 [32:23<00:00,  1.20s/it, loss=0.0254]
+Evaluating:   0%|                                                                   | 0/404 [00:00<?, ?it/sS 
+urgical Instrument Segmentation Pipeline
+======================================================================
+PyTorch version: 2.5.1+cu121
+CUDA available: True
+======================================================================
+Surgical Instrument Segmentation Pipeline
+======================================================================
+PyTorch version: 2.5.1+cu121
+CUDA available: True
+======================================================================
+Surgical Instrument Segmentation Pipeline
+======================================================================
+PyTorch version: 2.5.1+cu121
+CUDA available: True
+======================================================================
+Surgical Instrument Segmentation Pipeline
+======================================================================
+PyTorch version: 2.5.1+cu121
+CUDA available: True
+======================================================================
+Evaluating: 100%|█████████████████████████████████████████████████████████| 404/404 [01:37<00:00,  4.14it/s]
+
+Epoch 5 Validation:
+  IoU (instrument): 0.8581
+  Dice (instrument): 0.9236
+  Accuracy: 0.9943
+Epoch 6/15:   0%|                                                                  | 0/1616 [00:00<?, ?it/sS 
+urgical Instrument Segmentation Pipeline
+======================================================================
+PyTorch version: 2.5.1+cu121
+CUDA available: True
+======================================================================
+Surgical Instrument Segmentation Pipeline
+======================================================================
+PyTorch version: 2.5.1+cu121
+CUDA available: True
+======================================================================
+Surgical Instrument Segmentation Pipeline
+======================================================================
+PyTorch version: 2.5.1+cu121
+CUDA available: True
+======================================================================
+Surgical Instrument Segmentation Pipeline
+======================================================================
+PyTorch version: 2.5.1+cu121
+CUDA available: True
+======================================================================
+Epoch 6/15: 100%|██████████████████████████████████████████| 1616/1616 [32:22<00:00,  1.20s/it, loss=0.0265]
+Epoch 7/15:   0%|                                                                  | 0/1616 [00:00<?, ?it/sS 
+urgical Instrument Segmentation Pipeline
+======================================================================
+PyTorch version: 2.5.1+cu121
+CUDA available: True
+======================================================================
+Surgical Instrument Segmentation Pipeline
+======================================================================
+PyTorch version: 2.5.1+cu121
+CUDA available: True
+======================================================================
+Surgical Instrument Segmentation Pipeline
+======================================================================
+PyTorch version: 2.5.1+cu121
+CUDA available: True
+======================================================================
+Surgical Instrument Segmentation Pipeline
+======================================================================
+PyTorch version: 2.5.1+cu121
+CUDA available: True
+======================================================================
+Epoch 7/15: 100%|██████████████████████████████████████████| 1616/1616 [32:21<00:00,  1.20s/it, loss=0.0168]
+Epoch 8/15:   0%|                                                                  | 0/1616 [00:00<?, ?it/sS 
+urgical Instrument Segmentation Pipeline
+======================================================================
+PyTorch version: 2.5.1+cu121
+CUDA available: True
+======================================================================
+Surgical Instrument Segmentation Pipeline
+======================================================================
+PyTorch version: 2.5.1+cu121
+CUDA available: True
+======================================================================
+Surgical Instrument Segmentation Pipeline
+======================================================================
+PyTorch version: 2.5.1+cu121
+CUDA available: True
+======================================================================
+Surgical Instrument Segmentation Pipeline
+======================================================================
+PyTorch version: 2.5.1+cu121
+CUDA available: True
+======================================================================
+Epoch 8/15: 100%|██████████████████████████████████████████| 1616/1616 [32:22<00:00,  1.20s/it, loss=0.0100]
+Epoch 9/15:   0%|                                                                  | 0/1616 [00:00<?, ?it/sS 
+urgical Instrument Segmentation Pipeline
+======================================================================
+PyTorch version: 2.5.1+cu121
+CUDA available: True
+======================================================================
+Surgical Instrument Segmentation Pipeline
+======================================================================
+PyTorch version: 2.5.1+cu121
+CUDA available: True
+======================================================================
+Surgical Instrument Segmentation Pipeline
+======================================================================
+PyTorch version: 2.5.1+cu121
+CUDA available: True
+======================================================================
+Surgical Instrument Segmentation Pipeline
+======================================================================
+PyTorch version: 2.5.1+cu121
+CUDA available: True
+======================================================================
+Epoch 9/15: 100%|██████████████████████████████████████████| 1616/1616 [32:22<00:00,  1.20s/it, loss=0.0128]
+Epoch 10/15:   0%|                                                                 | 0/1616 [00:00<?, ?it/sS 
+urgical Instrument Segmentation Pipeline
+======================================================================
+PyTorch version: 2.5.1+cu121
+CUDA available: True
+======================================================================
+Surgical Instrument Segmentation Pipeline
+======================================================================
+PyTorch version: 2.5.1+cu121
+CUDA available: True
+======================================================================
+Surgical Instrument Segmentation Pipeline
+======================================================================
+PyTorch version: 2.5.1+cu121
+CUDA available: True
+======================================================================
+Surgical Instrument Segmentation Pipeline
+======================================================================
+PyTorch version: 2.5.1+cu121
+CUDA available: True
+======================================================================
+Epoch 10/15: 100%|█████████████████████████████████████████| 1616/1616 [32:22<00:00,  1.20s/it, loss=0.0136]
+Evaluating:   0%|                                                                   | 0/404 [00:00<?, ?it/sS 
+urgical Instrument Segmentation Pipeline
+======================================================================
+PyTorch version: 2.5.1+cu121
+CUDA available: True
+======================================================================
+Surgical Instrument Segmentation Pipeline
+======================================================================
+PyTorch version: 2.5.1+cu121
+CUDA available: True
+======================================================================
+Surgical Instrument Segmentation Pipeline
+======================================================================
+PyTorch version: 2.5.1+cu121
+CUDA available: True
+======================================================================
+Surgical Instrument Segmentation Pipeline
+======================================================================
+PyTorch version: 2.5.1+cu121
+CUDA available: True
+======================================================================
+Evaluating: 100%|█████████████████████████████████████████████████████████| 404/404 [01:37<00:00,  4.16it/s]
+
+Epoch 10 Validation:
+  IoU (instrument): 0.8836
+  Dice (instrument): 0.9382
+  Accuracy: 0.9953
+Epoch 11/15:   0%|                                                                 | 0/1616 [00:00<?, ?it/sS 
+urgical Instrument Segmentation Pipeline
+======================================================================
+PyTorch version: 2.5.1+cu121
+CUDA available: True
+======================================================================
+Surgical Instrument Segmentation Pipeline
+======================================================================
+PyTorch version: 2.5.1+cu121
+CUDA available: True
+======================================================================
+Surgical Instrument Segmentation Pipeline
+======================================================================
+PyTorch version: 2.5.1+cu121
+CUDA available: True
+======================================================================
+Surgical Instrument Segmentation Pipeline
+======================================================================
+PyTorch version: 2.5.1+cu121
+CUDA available: True
+======================================================================
+Epoch 11/15: 100%|█████████████████████████████████████████| 1616/1616 [32:23<00:00,  1.20s/it, loss=0.0236]
+Epoch 12/15:   0%|                                                                 | 0/1616 [00:00<?, ?it/sS 
+urgical Instrument Segmentation Pipeline
+======================================================================
+PyTorch version: 2.5.1+cu121
+CUDA available: True
+======================================================================
+Surgical Instrument Segmentation Pipeline
+======================================================================
+PyTorch version: 2.5.1+cu121
+CUDA available: True
+======================================================================
+Surgical Instrument Segmentation Pipeline
+======================================================================
+PyTorch version: 2.5.1+cu121
+CUDA available: True
+======================================================================
+Surgical Instrument Segmentation Pipeline
+======================================================================
+PyTorch version: 2.5.1+cu121
+CUDA available: True
+======================================================================
+Epoch 12/15: 100%|█████████████████████████████████████████| 1616/1616 [32:25<00:00,  1.20s/it, loss=0.0208]
+Epoch 13/15:   0%|                                                                 | 0/1616 [00:00<?, ?it/sS 
+urgical Instrument Segmentation Pipeline
+======================================================================
+PyTorch version: 2.5.1+cu121
+CUDA available: True
+======================================================================
+Surgical Instrument Segmentation Pipeline
+======================================================================
+PyTorch version: 2.5.1+cu121
+CUDA available: True
+======================================================================
+Surgical Instrument Segmentation Pipeline
+======================================================================
+PyTorch version: 2.5.1+cu121
+CUDA available: True
+======================================================================
+Surgical Instrument Segmentation Pipeline
+======================================================================
+PyTorch version: 2.5.1+cu121
+CUDA available: True
+======================================================================
+Epoch 13/15: 100%|█████████████████████████████████████████| 1616/1616 [32:25<00:00,  1.20s/it, loss=0.0161]
+Epoch 14/15:   0%|                                                                 | 0/1616 [00:00<?, ?it/sS 
+urgical Instrument Segmentation Pipeline
+======================================================================
+PyTorch version: 2.5.1+cu121
+CUDA available: True
+======================================================================
+Surgical Instrument Segmentation Pipeline
+======================================================================
+PyTorch version: 2.5.1+cu121
+CUDA available: True
+======================================================================
+Surgical Instrument Segmentation Pipeline
+======================================================================
+PyTorch version: 2.5.1+cu121
+CUDA available: True
+======================================================================
+Surgical Instrument Segmentation Pipeline
+======================================================================
+PyTorch version: 2.5.1+cu121
+CUDA available: True
+======================================================================
+Epoch 14/15: 100%|█████████████████████████████████████████| 1616/1616 [32:26<00:00,  1.20s/it, loss=0.0322]
+Epoch 15/15:   0%|                                                                 | 0/1616 [00:00<?, ?it/sS 
+urgical Instrument Segmentation Pipeline
+======================================================================
+PyTorch version: 2.5.1+cu121
+CUDA available: True
+======================================================================
+Surgical Instrument Segmentation Pipeline
+======================================================================
+PyTorch version: 2.5.1+cu121
+CUDA available: True
+======================================================================
+Surgical Instrument Segmentation Pipeline
+======================================================================
+PyTorch version: 2.5.1+cu121
+CUDA available: True
+======================================================================
+Surgical Instrument Segmentation Pipeline
+======================================================================
+PyTorch version: 2.5.1+cu121
+CUDA available: True
+======================================================================
+Epoch 15/15: 100%|█████████████████████████████████████████| 1616/1616 [32:24<00:00,  1.20s/it, loss=0.0050]
+Evaluating:   0%|                                                                   | 0/404 [00:00<?, ?it/sS 
+urgical Instrument Segmentation Pipeline
+======================================================================
+PyTorch version: 2.5.1+cu121
+CUDA available: True
+======================================================================
+Surgical Instrument Segmentation Pipeline
+======================================================================
+PyTorch version: 2.5.1+cu121
+CUDA available: True
+======================================================================
+Surgical Instrument Segmentation Pipeline
+======================================================================
+PyTorch version: 2.5.1+cu121
+CUDA available: True
+======================================================================
+Surgical Instrument Segmentation Pipeline
+======================================================================
+PyTorch version: 2.5.1+cu121
+CUDA available: True
+======================================================================
+Evaluating: 100%|█████████████████████████████████████████████████████████| 404/404 [01:37<00:00,  4.14it/s]
+
+Epoch 15 Validation:
+  IoU (instrument): 0.8999
+  Dice (instrument): 0.9473
+  Accuracy: 0.9960
+
+Final Evaluation...
+Evaluating:   0%|                                                                   | 0/404 [00:00<?, ?it/sS 
+urgical Instrument Segmentation Pipeline
+======================================================================
+PyTorch version: 2.5.1+cu121
+CUDA available: True
+======================================================================
+Surgical Instrument Segmentation Pipeline
+======================================================================
+PyTorch version: 2.5.1+cu121
+CUDA available: True
+======================================================================
+Surgical Instrument Segmentation Pipeline
+======================================================================
+PyTorch version: 2.5.1+cu121
+CUDA available: True
+======================================================================
+Surgical Instrument Segmentation Pipeline
+======================================================================
+PyTorch version: 2.5.1+cu121
+CUDA available: True
+======================================================================
+Evaluating: 100%|█████████████████████████████████████████████████████████| 404/404 [01:37<00:00,  4.15it/s]
+
+======================================================================
+Final Results - UNET
+======================================================================
+Training time: 29445.0s
+Final IoU (instrument): 0.8999
+Final Dice (instrument): 0.9473
+Final Accuracy: 0.9960
+✓ Saved: outputs\comparative\unet_model.pth
+
+======================================================================
+Training DEEPLABV3
+======================================================================
+✓ Model initialized: DeepLabV3-ResNet50
+  - Backbone: ResNet50 (pre-trained on ImageNet)
+  - Output classes: 2 (background + 1 instrument placeholder classes)
+✓ DeepLabV3-ResNet50 initialized: 41,999,191 parameters
+Epoch 1/15:   0%|                                                                  | 0/1616 [00:00<?, ?it/s]Surgical Instrument Segmentation Pipeline
+======================================================================
+PyTorch version: 2.5.1+cu121
+CUDA available: True
+======================================================================
+Surgical Instrument Segmentation Pipeline
+======================================================================
+PyTorch version: 2.5.1+cu121
+CUDA available: True
+======================================================================
+Surgical Instrument Segmentation Pipeline
+======================================================================
+PyTorch version: 2.5.1+cu121
+CUDA available: True
+======================================================================
+Surgical Instrument Segmentation Pipeline
+======================================================================
+PyTorch version: 2.5.1+cu121
+CUDA available: True
+======================================================================
+Epoch 1/15: 100%|████████████████████████████████████████| 1616/1616 [2:39:28<00:00,  5.92s/it, loss=0.0504]
+Epoch 2/15:   0%|                                                                  | 0/1616 [00:00<?, ?it/sS 
+urgical Instrument Segmentation Pipeline
+======================================================================
+PyTorch version: 2.5.1+cu121
+CUDA available: True
+======================================================================
+Surgical Instrument Segmentation Pipeline
+======================================================================
+PyTorch version: 2.5.1+cu121
+CUDA available: True
+======================================================================
+Surgical Instrument Segmentation Pipeline
+======================================================================
+PyTorch version: 2.5.1+cu121
+CUDA available: True
+======================================================================
+Surgical Instrument Segmentation Pipeline
+======================================================================
+PyTorch version: 2.5.1+cu121
+CUDA available: True
+======================================================================
+Epoch 2/15: 100%|████████████████████████████████████████| 1616/1616 [2:38:19<00:00,  5.88s/it, loss=0.0328]
+Epoch 3/15:   0%|                                                                  | 0/1616 [00:00<?, ?it/sS 
+urgical Instrument Segmentation Pipeline
+======================================================================
+PyTorch version: 2.5.1+cu121
+CUDA available: True
+======================================================================
+Surgical Instrument Segmentation Pipeline
+======================================================================
+PyTorch version: 2.5.1+cu121
+CUDA available: True
+======================================================================
+Surgical Instrument Segmentation Pipeline
+======================================================================
+PyTorch version: 2.5.1+cu121
+CUDA available: True
+======================================================================
+Surgical Instrument Segmentation Pipeline
+======================================================================
+PyTorch version: 2.5.1+cu121
+CUDA available: True
+======================================================================
+Epoch 3/15: 100%|████████████████████████████████████████| 1616/1616 [2:38:08<00:00,  5.87s/it, loss=0.0270]
+Epoch 4/15:   0%|                                                                  | 0/1616 [00:00<?, ?it/sS 
+urgical Instrument Segmentation Pipeline
+======================================================================
+PyTorch version: 2.5.1+cu121
+CUDA available: True
+======================================================================
+Surgical Instrument Segmentation Pipeline
+======================================================================
+PyTorch version: 2.5.1+cu121
+CUDA available: True
+======================================================================
+Surgical Instrument Segmentation Pipeline
+======================================================================
+PyTorch version: 2.5.1+cu121
+CUDA available: True
+======================================================================
+Surgical Instrument Segmentation Pipeline
+======================================================================
+PyTorch version: 2.5.1+cu121
+CUDA available: True
+======================================================================
+Epoch 4/15: 100%|████████████████████████████████████████| 1616/1616 [2:35:21<00:00,  5.77s/it, loss=0.0236]
+Epoch 5/15:   0%|                                                                  | 0/1616 [00:00<?, ?it/sS 
+urgical Instrument Segmentation Pipeline
+======================================================================
+PyTorch version: 2.5.1+cu121
+CUDA available: True
+======================================================================
+Surgical Instrument Segmentation Pipeline
+======================================================================
+PyTorch version: 2.5.1+cu121
+CUDA available: True
+======================================================================
+Surgical Instrument Segmentation Pipeline
+======================================================================
+PyTorch version: 2.5.1+cu121
+CUDA available: True
+======================================================================
+Surgical Instrument Segmentation Pipeline
+======================================================================
+PyTorch version: 2.5.1+cu121
+CUDA available: True
+======================================================================
+Epoch 5/15: 100%|████████████████████████████████████████| 1616/1616 [2:33:09<00:00,  5.69s/it, loss=0.0208]
+Evaluating:   0%|                                                                   | 0/404 [00:00<?, ?it/sS 
+urgical Instrument Segmentation Pipeline
+======================================================================
+PyTorch version: 2.5.1+cu121
+CUDA available: True
+======================================================================
+Surgical Instrument Segmentation Pipeline
+======================================================================
+PyTorch version: 2.5.1+cu121
+CUDA available: True
+======================================================================
+Surgical Instrument Segmentation Pipeline
+======================================================================
+PyTorch version: 2.5.1+cu121
+CUDA available: True
+======================================================================
+Surgical Instrument Segmentation Pipeline
+======================================================================
+PyTorch version: 2.5.1+cu121
+CUDA available: True
+======================================================================
+Evaluating: 100%|█████████████████████████████████████████████████████████| 404/404 [03:10<00:00,  2.12it/s]
+
+Epoch 5 Validation:
+  IoU (instrument): 0.8434
+  Dice (instrument): 0.9151
+  Accuracy: 0.9934
+Epoch 6/15:   0%|                                                                  | 0/1616 [00:00<?, ?it/sS 
+urgical Instrument Segmentation Pipeline
+======================================================================
+PyTorch version: 2.5.1+cu121
+CUDA available: True
+======================================================================
+Surgical Instrument Segmentation Pipeline
+======================================================================
+PyTorch version: 2.5.1+cu121
+CUDA available: True
+======================================================================
+Surgical Instrument Segmentation Pipeline
+======================================================================
+PyTorch version: 2.5.1+cu121
+CUDA available: True
+======================================================================
+Surgical Instrument Segmentation Pipeline
+======================================================================
+PyTorch version: 2.5.1+cu121
+CUDA available: True
+======================================================================
+Epoch 6/15: 100%|████████████████████████████████████████| 1616/1616 [2:30:06<00:00,  5.57s/it, loss=0.0304]
+Epoch 7/15:   0%|                                                                  | 0/1616 [00:00<?, ?it/sS 
+urgical Instrument Segmentation Pipeline
+======================================================================
+PyTorch version: 2.5.1+cu121
+CUDA available: True
+======================================================================
+Surgical Instrument Segmentation Pipeline
+======================================================================
+PyTorch version: 2.5.1+cu121
+CUDA available: True
+======================================================================
+Surgical Instrument Segmentation Pipeline
+======================================================================
+PyTorch version: 2.5.1+cu121
+CUDA available: True
+======================================================================
+Surgical Instrument Segmentation Pipeline
+======================================================================
+PyTorch version: 2.5.1+cu121
+CUDA available: True
+======================================================================
+Epoch 7/15: 100%|████████████████████████████████████████| 1616/1616 [2:35:46<00:00,  5.78s/it, loss=0.0164]
+Epoch 8/15:   0%|                                                                  | 0/1616 [00:00<?, ?it/sS 
+urgical Instrument Segmentation Pipeline
+======================================================================
+PyTorch version: 2.5.1+cu121
+CUDA available: True
+======================================================================
+Surgical Instrument Segmentation Pipeline
+======================================================================
+PyTorch version: 2.5.1+cu121
+CUDA available: True
+======================================================================
+Surgical Instrument Segmentation Pipeline
+======================================================================
+PyTorch version: 2.5.1+cu121
+CUDA available: True
+======================================================================
+Surgical Instrument Segmentation Pipeline
+======================================================================
+PyTorch version: 2.5.1+cu121
+CUDA available: True
+======================================================================
+Epoch 8/15: 100%|████████████████████████████████████████| 1616/1616 [2:38:11<00:00,  5.87s/it, loss=0.0171]
+Epoch 9/15:   0%|                                                                  | 0/1616 [00:00<?, ?it/sS 
+urgical Instrument Segmentation Pipeline
+======================================================================
+PyTorch version: 2.5.1+cu121
+CUDA available: True
+======================================================================
+Surgical Instrument Segmentation Pipeline
+======================================================================
+PyTorch version: 2.5.1+cu121
+CUDA available: True
+======================================================================
+Surgical Instrument Segmentation Pipeline
+======================================================================
+PyTorch version: 2.5.1+cu121
+CUDA available: True
+======================================================================
+Surgical Instrument Segmentation Pipeline
+======================================================================
+PyTorch version: 2.5.1+cu121
+CUDA available: True
+======================================================================
+Epoch 9/15: 100%|████████████████████████████████████████| 1616/1616 [2:37:41<00:00,  5.85s/it, loss=0.0130]
+Epoch 10/15:   0%|                                                                 | 0/1616 [00:00<?, ?it/sS 
+urgical Instrument Segmentation Pipeline
+======================================================================
+PyTorch version: 2.5.1+cu121
+CUDA available: True
+======================================================================
+Surgical Instrument Segmentation Pipeline
+======================================================================
+PyTorch version: 2.5.1+cu121
+CUDA available: True
+======================================================================
+Surgical Instrument Segmentation Pipeline
+======================================================================
+PyTorch version: 2.5.1+cu121
+CUDA available: True
+======================================================================
+Surgical Instrument Segmentation Pipeline
+======================================================================
+PyTorch version: 2.5.1+cu121
+CUDA available: True
+======================================================================
+Epoch 10/15: 100%|███████████████████████████████████████| 1616/1616 [2:37:43<00:00,  5.86s/it, loss=0.0165]
+Evaluating:   0%|                                                                   | 0/404 [00:00<?, ?it/sS 
+urgical Instrument Segmentation Pipeline
+======================================================================
+PyTorch version: 2.5.1+cu121
+CUDA available: True
+======================================================================
+Surgical Instrument Segmentation Pipeline
+======================================================================
+PyTorch version: 2.5.1+cu121
+CUDA available: True
+======================================================================
+Surgical Instrument Segmentation Pipeline
+======================================================================
+PyTorch version: 2.5.1+cu121
+CUDA available: True
+======================================================================
+Surgical Instrument Segmentation Pipeline
+======================================================================
+PyTorch version: 2.5.1+cu121
+CUDA available: True
+======================================================================
+Evaluating: 100%|█████████████████████████████████████████████████████████| 404/404 [02:44<00:00,  2.45it/s]
+
+Epoch 10 Validation:
+  IoU (instrument): 0.8543
+  Dice (instrument): 0.9214
+  Accuracy: 0.9939
+Epoch 11/15:   0%|                                                                 | 0/1616 [00:00<?, ?it/sS 
+urgical Instrument Segmentation Pipeline
+======================================================================
+PyTorch version: 2.5.1+cu121
+CUDA available: True
+======================================================================
+Surgical Instrument Segmentation Pipeline
+======================================================================
+PyTorch version: 2.5.1+cu121
+CUDA available: True
+======================================================================
+Surgical Instrument Segmentation Pipeline
+======================================================================
+PyTorch version: 2.5.1+cu121
+CUDA available: True
+======================================================================
+Surgical Instrument Segmentation Pipeline
+======================================================================
+PyTorch version: 2.5.1+cu121
+CUDA available: True
+======================================================================
+Epoch 11/15: 100%|███████████████████████████████████████| 1616/1616 [2:37:42<00:00,  5.86s/it, loss=0.0097]
+Epoch 12/15:   0%|                                                                 | 0/1616 [00:00<?, ?it/sS 
+urgical Instrument Segmentation Pipeline
+======================================================================
+PyTorch version: 2.5.1+cu121
+CUDA available: True
+======================================================================
+Surgical Instrument Segmentation Pipeline
+======================================================================
+PyTorch version: 2.5.1+cu121
+CUDA available: True
+======================================================================
+Surgical Instrument Segmentation Pipeline
+======================================================================
+PyTorch version: 2.5.1+cu121
+CUDA available: True
+======================================================================
+Surgical Instrument Segmentation Pipeline
+======================================================================
+PyTorch version: 2.5.1+cu121
+CUDA available: True
+======================================================================
+Epoch 12/15: 100%|███████████████████████████████████████| 1616/1616 [2:37:39<00:00,  5.85s/it, loss=0.0332]
+Epoch 13/15:   0%|                                                                 | 0/1616 [00:00<?, ?it/sS 
+urgical Instrument Segmentation Pipeline
+======================================================================
+PyTorch version: 2.5.1+cu121
+CUDA available: True
+======================================================================
+Surgical Instrument Segmentation Pipeline
+======================================================================
+PyTorch version: 2.5.1+cu121
+CUDA available: True
+======================================================================
+Surgical Instrument Segmentation Pipeline
+======================================================================
+PyTorch version: 2.5.1+cu121
+CUDA available: True
+======================================================================
+Surgical Instrument Segmentation Pipeline
+======================================================================
+PyTorch version: 2.5.1+cu121
+CUDA available: True
+======================================================================
+Epoch 13/15: 100%|███████████████████████████████████████| 1616/1616 [2:37:39<00:00,  5.85s/it, loss=0.0150]
+Epoch 14/15:   0%|                                                                 | 0/1616 [00:00<?, ?it/sS 
+urgical Instrument Segmentation Pipeline
+======================================================================
+PyTorch version: 2.5.1+cu121
+CUDA available: True
+======================================================================
+Surgical Instrument Segmentation Pipeline
+======================================================================
+PyTorch version: 2.5.1+cu121
+CUDA available: True
+======================================================================
+Surgical Instrument Segmentation Pipeline
+======================================================================
+PyTorch version: 2.5.1+cu121
+CUDA available: True
+======================================================================
+Surgical Instrument Segmentation Pipeline
+======================================================================
+PyTorch version: 2.5.1+cu121
+CUDA available: True
+======================================================================
+Epoch 14/15: 100%|███████████████████████████████████████| 1616/1616 [2:30:22<00:00,  5.58s/it, loss=0.0170]
+Epoch 15/15:   0%|                                                                 | 0/1616 [00:00<?, ?it/sS 
+urgical Instrument Segmentation Pipeline
+======================================================================
+PyTorch version: 2.5.1+cu121
+CUDA available: True
+======================================================================
+Surgical Instrument Segmentation Pipeline
+======================================================================
+PyTorch version: 2.5.1+cu121
+CUDA available: True
+======================================================================
+Surgical Instrument Segmentation Pipeline
+======================================================================
+PyTorch version: 2.5.1+cu121
+CUDA available: True
+======================================================================
+Surgical Instrument Segmentation Pipeline
+======================================================================
+PyTorch version: 2.5.1+cu121
+CUDA available: True
+======================================================================
+Epoch 15/15: 100%|███████████████████████████████████████| 1616/1616 [2:29:21<00:00,  5.55s/it, loss=0.0124]
+Evaluating:   0%|                                                                   | 0/404 [00:00<?, ?it/sS 
+urgical Instrument Segmentation Pipeline
+======================================================================
+PyTorch version: 2.5.1+cu121
+CUDA available: True
+======================================================================
+Surgical Instrument Segmentation Pipeline
+======================================================================
+PyTorch version: 2.5.1+cu121
+CUDA available: True
+======================================================================
+Surgical Instrument Segmentation Pipeline
+======================================================================
+PyTorch version: 2.5.1+cu121
+CUDA available: True
+======================================================================
+Surgical Instrument Segmentation Pipeline
+======================================================================
+PyTorch version: 2.5.1+cu121
+CUDA available: True
+======================================================================
+Evaluating: 100%|█████████████████████████████████████████████████████████| 404/404 [02:48<00:00,  2.40it/s]
+
+Epoch 15 Validation:
+  IoU (instrument): 0.8587
+  Dice (instrument): 0.9240
+  Accuracy: 0.9941
+
+Final Evaluation...
+Evaluating:   0%|                                                                   | 0/404 [00:00<?, ?it/sS 
+urgical Instrument Segmentation Pipeline
+======================================================================
+PyTorch version: 2.5.1+cu121
+CUDA available: True
+======================================================================
+Surgical Instrument Segmentation Pipeline
+======================================================================
+PyTorch version: 2.5.1+cu121
+CUDA available: True
+======================================================================
+Surgical Instrument Segmentation Pipeline
+======================================================================
+PyTorch version: 2.5.1+cu121
+CUDA available: True
+======================================================================
+Surgical Instrument Segmentation Pipeline
+======================================================================
+PyTorch version: 2.5.1+cu121
+CUDA available: True
+======================================================================
+Evaluating: 100%|█████████████████████████████████████████████████████████| 404/404 [02:44<00:00,  2.45it/s]
+
+======================================================================
+Final Results - DEEPLABV3
+======================================================================
+Training time: 140728.8s
+Final IoU (instrument): 0.8587
+Final Dice (instrument): 0.9240
+Final Accuracy: 0.9941
+✓ Saved: outputs\comparative\deeplabv3_model.pth
+
+======================================================================
+COMPARATIVE ANALYSIS
+======================================================================
+
+Architecture    IoU      Dice     Accuracy   Params       Time (s)
+----------------------------------------------------------------------
+unet            0.8999   0.9473   0.9960     17,263,042   29445.0
+deeplabv3       0.8587   0.9240   0.9941     41,999,191   140728.8
+
+✓ Saved comparison: outputs\comparative\comparison.json

@@ -1,0 +1,16 @@
+{
+  "unet": {
+    "iou_instrument": 0.8999183703873838,
+    "dice_instrument": 0.9473231949474702,
+    "accuracy": 0.9960419211057153,
+    "parameters": 17263042,
+    "training_time": 29445.041665792465
+  },
+  "deeplabv3": {
+    "iou_instrument": 0.8587412056233068,
+    "dice_instrument": 0.9240029790326171,
+    "accuracy": 0.994135063473541,
+    "parameters": 41999191,
+    "training_time": 140728.75035214424
+  }
+}
