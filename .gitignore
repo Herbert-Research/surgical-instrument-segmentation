@@ -28,7 +28,7 @@ frame_data/
 preds/
 predictions/
 results/
-outputs/
+# outputs/  # Removed to track comparative analysis artifacts for PhD work
 
 # Development
 .vscode/
