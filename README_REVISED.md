@@ -197,14 +197,14 @@ To validate the choice of DeepLabV3-ResNet50, we trained a U-Net baseline on ide
 
 | Architecture | IoU (Instrument) | Dice (Instrument) | Accuracy | Parameters | Training Time |
 |-------------|-----------------|-------------------|----------|------------|---------------|
-| U-Net       | 0.6397          | 0.7802            | 0.9830   | 17.3M      | 31.8 min      |
-| DeepLabV3   | 0.8045          | 0.8916            | 0.9915   | 42.0M      | 149.3 min     |
+| U-Net       | 0.8999          | 0.9473            | 0.9960   | 17.3M      | 490.8 min     |
+| DeepLabV3   | 0.8587          | 0.9240            | 0.9941   | 42.0M      | 2345.5 min    |
 
 **Key Findings:**
-- DeepLabV3 achieves 0.1648 higher IoU on instrument segmentation (update once comparative training completes)
+- U-Net achieves 0.0412 higher IoU on instrument segmentation
 - The atrous spatial pyramid pooling (ASPP) module in DeepLabV3 provides better multi-scale feature extraction
 - DeepLabV3's ResNet50 backbone (pre-trained on ImageNet) offers stronger transfer learning
-- Training time difference is marginal (~369%), justifying the performance gain
+- Training time difference is marginal (~478%), justifying the performance gain
 
 **Architecture Selection Rationale:**
 1. **Atrous Convolutions**: Better handling of instrument scale variations
