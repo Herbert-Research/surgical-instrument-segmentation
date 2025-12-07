@@ -1,0 +1,11 @@
+# <type>: <subject> (max 50 chars)
+# |<----  Using a Maximum Of 50 Characters  ---->|
+
+# Type: feat, fix, docs, style, refactor, test, chore
+# Example: feat: add k-fold cross-validation
+
+# Body: Explain *what* and *why* (not *how*)
+# |<----   Try To Limit Each Line to a Maximum Of 72 Characters   ---->|
+
+# Footer: Reference issues, breaking changes
+# Example: Closes #123

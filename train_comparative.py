@@ -9,7 +9,7 @@ import argparse
 import json
 import time
 from pathlib import Path
-from typing import Dict, Tuple
+from typing import Any
 
 import numpy as np
 import torch
@@ -18,16 +18,15 @@ from torch.utils.data import DataLoader
 from torchvision import transforms
 from tqdm import tqdm
 
-from instrument_segmentation import (
-    INSTRUMENT_CLASS_WEIGHT,
+from surgical_segmentation import SurgicalDataset
+from surgical_segmentation.models import InstrumentSegmentationModel, UNet
+from surgical_segmentation.training.trainer import (
     IMAGENET_MEAN,
     IMAGENET_STD,
+    INSTRUMENT_CLASS_WEIGHT,
     NUM_CLASSES,
-    InstrumentSegmentationModel,
-    SurgicalDataset,
     seed_everything,
 )
-from models.unet import UNet
 
 
 def parse_args() -> argparse.Namespace:
@@ -108,7 +107,7 @@ def evaluate_model(
     dataloader: DataLoader,
     device: str,
     num_classes: int = NUM_CLASSES,
-) -> Dict[str, float]:
+) -> dict[str, float]:
     """Evaluate model and return metrics."""
 
     model.eval()
@@ -169,7 +168,7 @@ def train_model_complete(
     train_loader: DataLoader,
     val_loader: DataLoader,
     args: argparse.Namespace,
-) -> Tuple[nn.Module, Dict]:
+) -> tuple[nn.Module, dict]:
     """Complete training pipeline for one architecture."""
 
     print(f"\n{'=' * 70}")
@@ -184,7 +183,7 @@ def train_model_complete(
     criterion = nn.CrossEntropyLoss(weight=class_weights)
     optimizer = torch.optim.Adam(model.parameters(), lr=args.learning_rate)
 
-    training_history: Dict[str, object] = {
+    training_history: dict[str, Any] = {
         "architecture": architecture,
         "train_losses": [],
         "val_metrics": [],
@@ -308,7 +307,7 @@ def main() -> None:
         pin_memory=torch.cuda.is_available(),
     )
 
-    results: Dict[str, Dict] = {}
+    results: dict[str, dict] = {}
     for architecture in args.models:
         model, history = train_model_complete(architecture, train_loader, val_loader, args)
 

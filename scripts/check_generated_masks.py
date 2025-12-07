@@ -1,12 +1,17 @@
 """Quick script to check generated mask values."""
-from PIL import Image
-import numpy as np
 from pathlib import Path
 
+import numpy as np
+from PIL import Image
+
 mask_dir = Path("datasets/Cholec80/video01_generated_masks")
-masks_to_check = ['video01_mask_000000.png', 'video01_mask_000100.png', 
-                  'video01_mask_000200.png', 'video01_mask_000300.png',
-                  'video01_mask_000400.png']
+masks_to_check = [
+    "video01_mask_000000.png",
+    "video01_mask_000100.png",
+    "video01_mask_000200.png",
+    "video01_mask_000300.png",
+    "video01_mask_000400.png",
+]
 
 for mask_name in masks_to_check:
     mask_path = mask_dir / mask_name

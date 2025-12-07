@@ -14,9 +14,7 @@ class TestUNet:
         model = UNet(n_channels=3, n_classes=2, bilinear=True)
         output = model(sample_image_tensor)
 
-        assert output.shape == (1, 2, 256, 256), (
-            f"Expected (1, 2, 256, 256), got {output.shape}"
-        )
+        assert output.shape == (1, 2, 256, 256), f"Expected (1, 2, 256, 256), got {output.shape}"
 
     def test_forward_pass_no_nan(self, sample_image_tensor):
         """Verify forward pass produces no NaN values."""
@@ -31,9 +29,7 @@ class TestUNet:
         param_count = model.count_parameters()
 
         # U-Net should have ~17M parameters with bilinear upsampling
-        assert 15_000_000 < param_count < 20_000_000, (
-            f"Unexpected parameter count: {param_count:,}"
-        )
+        assert 15_000_000 < param_count < 20_000_000, f"Unexpected parameter count: {param_count:,}"
 
     @pytest.mark.parametrize("n_classes", [2, 5, 10])
     def test_variable_output_classes(self, sample_image_tensor, n_classes):
@@ -53,9 +49,7 @@ class TestDeepLabV3:
         model.eval()  # Required for BatchNorm with small batch sizes
         output = model(sample_image_tensor)
 
-        assert output.shape == (1, 2, 256, 256), (
-            f"Expected (1, 2, 256, 256), got {output.shape}"
-        )
+        assert output.shape == (1, 2, 256, 256), f"Expected (1, 2, 256, 256), got {output.shape}"
 
     def test_forward_pass_no_nan(self, sample_image_tensor):
         """Verify forward pass produces no NaN values."""

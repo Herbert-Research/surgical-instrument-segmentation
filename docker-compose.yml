@@ -1,0 +1,19 @@
+version: "3.8"
+
+services:
+  surgical-segmentation:
+    build: .
+    image: surgical-segmentation:latest
+    volumes:
+      - ./data:/app/data
+      - ./outputs:/app/outputs
+      - ./datasets:/app/datasets
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+    environment:
+      - CUDA_VISIBLE_DEVICES=0

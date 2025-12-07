@@ -19,7 +19,7 @@ def load_results(output_dir: Path):
     for arch in ["unet", "deeplabv3"]:
         history_file = output_dir / f"{arch}_history.json"
         if history_file.exists():
-            with open(history_file, "r", encoding="utf-8") as f:
+            with open(history_file, encoding="utf-8") as f:
                 results[arch] = json.load(f)
     return results
 
@@ -157,9 +157,7 @@ def generate_comparison_table(results: dict, output_path: Path):
     """Generate markdown table for README."""
 
     table = "## Model Comparison Results\n\n"
-    table += (
-        "| Architecture | IoU (Instrument) | Dice (Instrument) | Accuracy | Parameters | Training Time |\n"
-    )
+    table += "| Architecture | IoU (Instrument) | Dice (Instrument) | Accuracy | Parameters | Training Time |\n"
     table += "|-------------|-----------------|-------------------|----------|------------|---------------|\n"
 
     for arch, data in results.items():
@@ -191,9 +189,7 @@ def generate_comparison_table(results: dict, output_path: Path):
 
     param_ratio = results["deeplabv3"]["parameters"] / results["unet"]["parameters"]
     table += f"DeepLabV3 has {param_ratio:.1f}× more parameters than U-Net, "
-    table += (
-        "providing stronger feature representations at the cost of increased computational requirements.\n"
-    )
+    table += "providing stronger feature representations at the cost of increased computational requirements.\n"
 
     with open(output_path, "w", encoding="utf-8") as f:
         f.write(table)

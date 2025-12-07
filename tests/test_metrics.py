@@ -6,8 +6,8 @@ import pytest
 
 def compute_iou(true_mask: np.ndarray, pred_mask: np.ndarray, class_id: int) -> float:
     """Compute Intersection over Union for a single class."""
-    true_binary = (true_mask == class_id)
-    pred_binary = (pred_mask == class_id)
+    true_binary = true_mask == class_id
+    pred_binary = pred_mask == class_id
 
     intersection = np.logical_and(true_binary, pred_binary).sum()
     union = np.logical_or(true_binary, pred_binary).sum()
@@ -19,8 +19,8 @@ def compute_iou(true_mask: np.ndarray, pred_mask: np.ndarray, class_id: int) -> 
 
 def compute_dice(true_mask: np.ndarray, pred_mask: np.ndarray, class_id: int) -> float:
     """Compute Dice coefficient for a single class."""
-    true_binary = (true_mask == class_id)
-    pred_binary = (pred_mask == class_id)
+    true_binary = true_mask == class_id
+    pred_binary = pred_mask == class_id
 
     intersection = np.logical_and(true_binary, pred_binary).sum()
     total = true_binary.sum() + pred_binary.sum()

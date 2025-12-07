@@ -2,7 +2,7 @@
 
 ## Institutional Review Board (IRB) Status
 
-This research uses **exclusively publicly available, de-identified datasets** 
+This research uses **exclusively publicly available, de-identified datasets**
 and does not involve human subjects research requiring IRB approval.
 
 ### CholecSeg8k Dataset

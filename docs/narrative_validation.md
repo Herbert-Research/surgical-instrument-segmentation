@@ -1,16 +1,16 @@
 # Narrative Consistency Validation Checklist
 
-## ✅ Completed Revisions
+## 1. Completed Revisions
 
-- [ ] README.md title changed from gastrectomy-specific to general
-- [ ] Executive summary accurately describes current scope
-- [ ] All "KLASS" references removed or properly contextualized
-- [ ] "Gastrectomy" appears only in future work/limitations sections
-- [ ] Dataset choice explicitly justified
-- [ ] Limitations section added with honest assessment
-- [ ] Claims match actual implementation (no overselling)
+- [x] README.md title changed from gastrectomy-specific to general
+- [x] Executive summary accurately describes current scope
+- [x] All "KLASS" references removed or properly contextualized
+- [x] "Gastrectomy" appears only in future work/limitations sections
+- [x] Dataset choice explicitly justified
+- [x] Limitations section added with honest assessment
+- [x] Claims match actual implementation (no overselling)
 
-## 🔍 Verification Commands
+## 2. Verification Commands
 
 ```bash
 # Should return 0 results:
@@ -25,20 +25,20 @@ grep -i "clinical deployment" README.md
 grep -i "patient care" README.md
 ```
 
-## 📝 Reviewer Checklist
+## 3. Reviewer Checklist
 
 Read README.md and verify:
-- [ ] First paragraph does not overstate contributions
-- [ ] Dataset limitations are clearly stated upfront
-- [ ] Gastrectomy connection is framed as future work
-- [ ] No claims about procedure-specific validation
-- [ ] Honest about generalization challenges
-- [ ] Technical contributions are accurate and verifiable
+- [x] First paragraph does not overstate contributions
+- [x] Dataset limitations are clearly stated upfront
+- [x] Gastrectomy connection is framed as future work
+- [x] No claims about procedure-specific validation
+- [x] Honest about generalization challenges
+- [x] Technical contributions are accurate and verifiable
 
-## ✨ Quality Standards Met
+## 4. Quality Standards Met
 
-- [ ] Professional tone maintained
-- [ ] Scientific accuracy preserved
-- [ ] No defensive language
-- [ ] Future work positioned constructively
-- [ ] Limitations presented as opportunities
+- [x] Professional tone maintained
+- [x] Scientific accuracy preserved
+- [x] No defensive language
+- [x] Future work positioned constructively
+- [x] Limitations presented as opportunities

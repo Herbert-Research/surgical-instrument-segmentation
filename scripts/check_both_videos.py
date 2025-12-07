@@ -1,7 +1,8 @@
 """Check instrument detection in video52 generated masks."""
-from PIL import Image
-import numpy as np
 from pathlib import Path
+
+import numpy as np
+from PIL import Image
 
 mask_dir = Path("datasets/Cholec80/video52_generated_masks")
 masks_to_check = list(mask_dir.glob("*.png"))[:10]  # Check first 10

@@ -1,7 +1,8 @@
 """Compare video01 frames to video52 training frames to understand domain shift."""
+from pathlib import Path
+
 import cv2
 import numpy as np
-from pathlib import Path
 from PIL import Image
 
 # Load a video52 training frame
@@ -23,7 +24,7 @@ if Path(video52_frame_path).exists():
     v52_instrument_pixels = np.sum(v52_mask > 0)
     v52_total = v52_mask.size
     v52_percentage = (v52_instrument_pixels / v52_total) * 100
-    
+
     print(f"\nVIDEO 52 (Training Data):")
     print(f"  Frame shape: {v52_frame.shape}")
     print(f"  Mask unique values: {np.unique(v52_mask)}")
@@ -37,7 +38,7 @@ if Path(video01_frame_path).exists():
     v01_instrument_pixels = np.sum(v01_mask > 0)
     v01_total = v01_mask.size
     v01_percentage = (v01_instrument_pixels / v01_total) * 100
-    
+
     print(f"\nVIDEO 01 (Inference - Predicted):")
     print(f"  Frame shape: {v01_frame.shape}")
     print(f"  Mask unique values: {np.unique(v01_mask)}")

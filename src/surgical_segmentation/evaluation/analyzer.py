@@ -11,15 +11,16 @@ from __future__ import annotations
 
 import argparse
 import textwrap
+from collections.abc import Sequence
 from pathlib import Path
-from typing import Sequence
 
 import matplotlib.pyplot as plt
 import numpy as np
 import seaborn as sns
 from PIL import Image
 
-DEFAULT_OUTPUT = Path("comprehensive_analysis.png")
+FIGURES_DIR = Path("outputs/figures")
+DEFAULT_OUTPUT = FIGURES_DIR / "comprehensive_analysis.png"
 DEFAULT_CLASS_NAMES = ["background", "instrument"]
 
 
@@ -37,19 +38,19 @@ def precision_recall_curve_manual(true_labels, pred_probs, num_thresholds=200):
     true_labels = np.asarray(true_labels, dtype=int)
     pred_probs = np.asarray(pred_probs, dtype=float)
     thresholds = np.linspace(0.0, 1.0, num_thresholds)
-    
+
     precision = np.zeros_like(thresholds)
     recall = np.zeros_like(thresholds)
-    
+
     for idx, threshold in enumerate(thresholds):
         predictions = (pred_probs >= threshold).astype(int)
         tp = np.logical_and(predictions == 1, true_labels == 1).sum()
         fp = np.logical_and(predictions == 1, true_labels == 0).sum()
         fn = np.logical_and(predictions == 0, true_labels == 1).sum()
-        
+
         precision[idx] = tp / (tp + fp) if (tp + fp) > 0 else 1.0
         recall[idx] = tp / (tp + fn) if (tp + fn) > 0 else 0.0
-    
+
     return precision, recall, thresholds
 
 
@@ -109,20 +110,18 @@ def resolve_class_names(num_classes: int, override: str | None) -> Sequence[str]
     return names[:num_classes]
 
 
-def load_mask_prediction_pairs(
-    mask_dir: Path, pred_dir: Path, max_samples: int
-) -> list[dict]:
+def load_mask_prediction_pairs(mask_dir: Path, pred_dir: Path, max_samples: int) -> list[dict]:
     if not mask_dir or not pred_dir:
         raise ValueError("Both --mask-dir and --pred-dir must be provided for dataset mode.")
 
     if not mask_dir.exists():
         raise FileNotFoundError(
-            f"Mask directory '{mask_dir}' not found. Run prepare_cholecseg8k_assets.py or point"
+            f"Mask directory '{mask_dir}' not found. Run scripts/prepare_cholecseg8k.py or point"
             " --mask-dir to a valid location."
         )
     if not pred_dir.exists():
         raise FileNotFoundError(
-            f"Prediction directory '{pred_dir}' not found. Run instrument_segmentation.py"
+            f"Prediction directory '{pred_dir}' not found. Run train-segmentation"
             " to export masks or point --pred-dir to your outputs."
         )
 
@@ -208,70 +207,74 @@ def run_synthetic_analysis(args: argparse.Namespace) -> None:
     Detailed analysis of segmentation model performance
     Shows understanding of evaluation beyond accuracy
     """
-    
+
     # Simulate prediction probabilities and ground truth
     np.random.seed(42)
     n_pixels = 10000
-    
+
     # Simulate class imbalance (90% background, 10% instrument)
     true_labels = np.random.choice([0, 1], size=n_pixels, p=[0.9, 0.1])
-    
+
     # Simulate predictions with some errors
     pred_probs = np.zeros(n_pixels)
     pred_probs[true_labels == 0] = np.random.beta(2, 8, (true_labels == 0).sum())
     pred_probs[true_labels == 1] = np.random.beta(8, 2, (true_labels == 1).sum())
-    
+
     pred_labels = (pred_probs > 0.5).astype(int)
-    
+
     # Create comprehensive visualization
     fig = plt.figure(figsize=(16, 10))
     gs = fig.add_gridspec(2, 3, hspace=0.3, wspace=0.3)
-    
+
     # 1. Confusion Matrix
     ax1 = fig.add_subplot(gs[0, 0])
     cm = binary_confusion_matrix(true_labels, pred_labels)
-    sns.heatmap(cm, annot=True, fmt='d', cmap='Blues', ax=ax1)
-    ax1.set_title('Confusion Matrix', fontweight='bold')
-    ax1.set_ylabel('True Label')
-    ax1.set_xlabel('Predicted Label')
-    
+    sns.heatmap(cm, annot=True, fmt="d", cmap="Blues", ax=ax1)
+    ax1.set_title("Confusion Matrix", fontweight="bold")
+    ax1.set_ylabel("True Label")
+    ax1.set_xlabel("Predicted Label")
+
     # 2. Precision-Recall Curve
     ax2 = fig.add_subplot(gs[0, 1])
     precision, recall, thresholds = precision_recall_curve_manual(true_labels, pred_probs)
     ax2.plot(recall, precision, linewidth=2)
-    ax2.set_xlabel('Recall')
-    ax2.set_ylabel('Precision')
-    ax2.set_title('Precision-Recall Curve', fontweight='bold')
+    ax2.set_xlabel("Recall")
+    ax2.set_ylabel("Precision")
+    ax2.set_title("Precision-Recall Curve", fontweight="bold")
     ax2.grid(True, alpha=0.3)
-    
+
     # 3. Class Distribution
     ax3 = fig.add_subplot(gs[0, 2])
     class_dist = [np.sum(true_labels == 0), np.sum(true_labels == 1)]
-    ax3.bar(['Background', 'Instrument'], class_dist, color=['steelblue', 'coral'], alpha=0.7)
-    ax3.set_ylabel('Number of Pixels')
-    ax3.set_title('Class Distribution (Imbalanced)', fontweight='bold')
-    ax3.grid(axis='y', alpha=0.3)
-    
+    ax3.bar(["Background", "Instrument"], class_dist, color=["steelblue", "coral"], alpha=0.7)
+    ax3.set_ylabel("Number of Pixels")
+    ax3.set_title("Class Distribution (Imbalanced)", fontweight="bold")
+    ax3.grid(axis="y", alpha=0.3)
+
     # 4. Per-frame IoU distribution
     ax4 = fig.add_subplot(gs[1, :])
     frame_ious = np.random.beta(8, 2, 20)  # Simulate per-frame IoUs
     mean_iou = float(np.mean(frame_ious))
-    ax4.plot(range(1, 21), frame_ious, 'o-', linewidth=2, markersize=8)
-    ax4.axhline(y=mean_iou, color='r', linestyle='--', label=f'Mean: {mean_iou:.3f}')
-    ax4.set_xlabel('Frame Number')
-    ax4.set_ylabel('IoU Score')
-    ax4.set_title('Per-Frame Segmentation Performance', fontweight='bold')
+    ax4.plot(range(1, 21), frame_ious, "o-", linewidth=2, markersize=8)
+    ax4.axhline(y=mean_iou, color="r", linestyle="--", label=f"Mean: {mean_iou:.3f}")
+    ax4.set_xlabel("Frame Number")
+    ax4.set_ylabel("IoU Score")
+    ax4.set_title("Per-Frame Segmentation Performance", fontweight="bold")
     ax4.legend()
     ax4.grid(True, alpha=0.3)
-    
+
     # Calculate comprehensive metrics
     tn, fp, fn, tp = cm.ravel()
     accuracy = (tp + tn) / (tp + tn + fp + fn)
     precision_val = tp / (tp + fp) if (tp + fp) > 0 else 0
     recall_val = tp / (tp + fn) if (tp + fn) > 0 else 0
-    f1 = 2 * (precision_val * recall_val) / (precision_val + recall_val) if (precision_val + recall_val) > 0 else 0
+    f1 = (
+        2 * (precision_val * recall_val) / (precision_val + recall_val)
+        if (precision_val + recall_val) > 0
+        else 0
+    )
     specificity = tn / (tn + fp) if (tn + fp) > 0 else 0
-    
+
     metrics_text = textwrap.dedent(
         f"""
         COMPREHENSIVE EVALUATION METRICS
@@ -299,13 +302,13 @@ def run_synthetic_analysis(args: argparse.Namespace) -> None:
           ✓ Frame-by-frame analysis provides temporal consistency insights
         """
     ).strip()
-    
+
     print()
     print(metrics_text)
-    
-    fig.savefig(args.output, dpi=300, bbox_inches='tight')
+
+    fig.savefig(args.output, dpi=300, bbox_inches="tight")
     plt.close(fig)
-    
+
     print("✓ Comprehensive synthetic analysis complete")
     print(f"  Generated: {args.output}")
 
@@ -373,7 +376,7 @@ def run_dataset_analysis(args: argparse.Namespace) -> None:
         # Find a frame with instruments (not an empty frame)
         selected_idx = 0
         max_instrument_pixels = 0
-        
+
         for idx, pair in enumerate(pairs):
             temp_true = pair["true"].copy()
             # Check for instrument pixels
@@ -381,11 +384,11 @@ def run_dataset_analysis(args: argparse.Namespace) -> None:
                 instrument_pixels = ((temp_true == 31) | (temp_true == 32)).sum()
             else:
                 instrument_pixels = (temp_true == 1).sum()
-            
+
             if instrument_pixels > max_instrument_pixels:
                 max_instrument_pixels = instrument_pixels
                 selected_idx = idx
-        
+
         sample_true = pairs[selected_idx]["true"].copy()
         sample_pred = pairs[selected_idx]["pred"].copy()
 
@@ -399,7 +402,10 @@ def run_dataset_analysis(args: argparse.Namespace) -> None:
 
         preview = build_preview_image(sample_true, sample_pred, args.num_classes)
         ax_preview.imshow(preview)
-        ax_preview.set_title(f"Sample {pairs[selected_idx]['name']} (GT | Pred) - {max_instrument_pixels} instrument pixels", fontweight="bold")
+        ax_preview.set_title(
+            f"Sample {pairs[selected_idx]['name']} (GT | Pred) - {max_instrument_pixels} instrument pixels",
+            fontweight="bold",
+        )
         ax_preview.axis("off")
     else:
         ax_preview.text(
@@ -427,8 +433,14 @@ def analyze_model_performance(args: argparse.Namespace) -> None:
         run_dataset_analysis(args)
 
 
-if __name__ == "__main__":
+def main() -> None:
     print("Running Comprehensive Model Analysis")
     print("=" * 70)
     cli_args = parse_args()
+    cli_args.output = cli_args.output.resolve()
+    cli_args.output.parent.mkdir(parents=True, exist_ok=True)
     analyze_model_performance(cli_args)
+
+
+if __name__ == "__main__":
+    main()

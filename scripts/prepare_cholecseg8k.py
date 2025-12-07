@@ -8,7 +8,7 @@ Uses watershed masks to ensure accurate pixel-level class labels for
 surgical instrument segmentation.
 
 Example usage:
-    python prepare_cholecseg8k_assets.py \
+    python scripts/prepare_cholecseg8k.py \
         --frame-dir /path/to/frame_pngs \
         --mask-dir  /path/to/mask_pngs \
         --video-stem video01
@@ -21,29 +21,37 @@ import re
 import shutil
 from pathlib import Path
 
-
 FRAME_PATTERN = re.compile(r"^frame_(\d+)_endo$", re.IGNORECASE)
 MASK_PATTERN = re.compile(r"^frame_(\d+)_endo_watershed_mask$", re.IGNORECASE)
 
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Copy/rename CholecSeg8k frames/masks")
-    parser.add_argument("--frame-dir", type=Path, required=True, help="Directory with *_endo.png files")
-    parser.add_argument("--mask-dir", type=Path, required=True, help="Directory with *_endo_watershed_mask.png files")
+    parser.add_argument(
+        "--frame-dir", type=Path, required=True, help="Directory with *_endo.png files"
+    )
+    parser.add_argument(
+        "--mask-dir",
+        type=Path,
+        required=True,
+        help="Directory with *_endo_watershed_mask.png files",
+    )
     parser.add_argument("--output-frame-dir", type=Path, default=Path("data/sample_frames"))
     parser.add_argument("--output-mask-dir", type=Path, default=Path("data/masks"))
-    parser.add_argument("--video-stem", type=str, default="video01", help="Stem prefix (e.g., video01)")
+    parser.add_argument(
+        "--video-stem", type=str, default="video01", help="Stem prefix (e.g., video01)"
+    )
     parser.add_argument("--overwrite", action="store_true", help="Overwrite existing outputs")
     return parser.parse_args()
 
 
 def collect_sources(directory: Path, pattern: re.Pattern[str]) -> dict[int, Path]:
     """Recursively collect image files matching the specified pattern.
-    
+
     Args:
         directory: Root directory to search
         pattern: Compiled regex pattern to match file stems
-        
+
     Returns:
         Dictionary mapping frame indices to file paths
     """
@@ -87,13 +95,13 @@ def main() -> None:
     for idx in paired_indices:
         frame_src = frame_sources[idx]
         mask_src = mask_sources[idx]
-        
+
         frame_dst = args.output_frame_dir / f"{args.video_stem}_frame_{idx:06d}.png"
         mask_dst = args.output_mask_dir / f"{args.video_stem}_mask_{idx:06d}.png"
 
         if not args.overwrite and frame_dst.exists():
-             print(f"Skipping existing: {frame_dst.name}")
-             continue
+            print(f"Skipping existing: {frame_dst.name}")
+            continue
 
         shutil.copy2(frame_src, frame_dst)
         shutil.copy2(mask_src, mask_dst)

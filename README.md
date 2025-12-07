@@ -1,8 +1,8 @@
 # Laparoscopic Instrument Segmentation Analytics
 
-**Status**: Technical proof-of-concept on public benchmark dataset  
-**Application Domain**: General laparoscopic surgery computer vision  
-**Validation Dataset**: CholecSeg8k (cholecystectomy procedures)  
+**Status**: Technical proof-of-concept on public benchmark dataset
+**Application Domain**: General laparoscopic surgery computer vision
+**Validation Dataset**: CholecSeg8k (cholecystectomy procedures)
 **Future Target**: Gastrectomy quality assessment (pending data availability)
 
 ---
@@ -45,7 +45,7 @@ Modern surgical quality assessment relies heavily on manual review of video reco
 While this implementation uses cholecystectomy data for technical development, the long-term research goal is to apply these methods to KLASS-standardized gastrectomy procedures.
 The technical approaches developed here (instrument segmentation, temporal tracking, quality metrics) are procedure-agnostic and designed for transfer to gastric cancer surgery quality monitoring.
 
-**Current Status**: Technical foundation established on publicly available data  
+**Current Status**: Technical foundation established on publicly available data
 **Next Steps**: Adaptation to gastrectomy procedures pending institutional data access
 
 ### Dataset Choice Rationale
@@ -71,7 +71,7 @@ This work addresses three key technical challenges in surgical video analysis:
 
 ## Data Provenance and Governance
 
-- **Synthetic Stream**: The repository includes a deterministic synthetic data generator (instrument_segmentation.py) that enables end-to-end execution without access to protected clinical footage.
+- **Synthetic Stream**: The repository includes a deterministic synthetic data generator (`train-segmentation` in `src/surgical_segmentation/training/trainer.py`) that enables end-to-end execution without access to protected clinical footage.
 - **Clinical Stream**: Reported benchmarks leverage the public CholecSeg8k dataset, which provides paired endoscopic frames and pixel-level masks derived from Cholec80 videos.
 - **Compliance**: All included figures and metrics originate from de-identified public data. The pipeline is designed so that institution-specific data never leaves secure environments.
 
@@ -79,7 +79,7 @@ This work addresses three key technical challenges in surgical video analysis:
 
 During empirical validation a discrepancy between the CholecSeg8k documentation and actual watershed mask encoding was discovered.
 
-**Published Documentation (Table I):** Class 5 = Grasper, Class 9 = L-hook  
+**Published Documentation (Table I):** Class 5 = Grasper, Class 9 = L-hook
 **Actual Mask Encoding (Verified):** Class 31 = Grasper, Class 32 = L-hook
 
 The pipeline remaps classes 31 and 32 to a single binary instrument label before training, ensuring valid supervision.
@@ -95,23 +95,23 @@ remapped[instrument_mask] = 1
 The repository contains a complete, end-to-end workflow with data preparation, training, evaluation, and clinical validation utilities.
 
 ### Data Preparation
-- `prepare_cholecseg8k_assets.py` standardizes the released frames/masks into `data/sample_frames` and `data/masks`.
-- `prepare_full_dataset.py` processes the entire 8,080-frame dataset, enforces naming conventions, and partitions samples for training/validation.
+- `scripts/prepare_cholecseg8k.py` standardizes the released frames/masks into `data/sample_frames` and `data/masks`.
+- `scripts/prepare_full_dataset.py` processes the entire 8,080-frame dataset, enforces naming conventions, and partitions samples for training/validation.
 
 ### Model Training
-`instrument_segmentation.py`:
+`train-segmentation` (`src/surgical_segmentation/training/trainer.py`):
 - Loads prepared frame/mask pairs with augmentations and class balancing
 - Fine-tunes an ImageNet-pretrained DeepLabV3-ResNet50 model in PyTorch
-- Saves learned weights (`instrument_segmentation_model.pth`) and performance plots
+- Saves learned weights to `outputs/models/instrument_segmentation_model.pth` and performance plots to `outputs/figures/`
 - Supports both small-scale experimentation and full dataset training across 17 videos
 
 ### Model Evaluation and Analysis
-- `analyze_model.py` computes IoU, Dice, precision, and recall, and generates publication-ready confusion matrices (`comprehensive_analysis.png`).
-- `analyze_generated_masks.py` performs visual QA on new surgical videos, producing paired frame/prediction panels for stakeholder review.
-- `analyze_mask_statistics.py` quantifies detection rates, coverage distributions, and temporal stability for generated masks.
+- `evaluate-model` (`src/surgical_segmentation/evaluation/analyzer.py`) computes IoU, Dice, precision, and recall, and generates publication-ready confusion matrices (`outputs/figures/comprehensive_analysis.png`).
+- `scripts/analyze_generated_masks.py` performs visual QA on new surgical videos, producing paired frame/prediction panels for stakeholder review.
+- `scripts/analyze_mask_statistics.py` quantifies detection rates, coverage distributions, and temporal stability for generated masks.
 
 ### Research Notebook Utilities
-Supplementary scripts (`compare_videos.py`, `check_both_videos.py`, `test_single_frame.py`, etc.) serve as a lightweight research notebook for probing generalization questions, tuning thresholds, and replicating the domain shift analysis discussed below.
+Supplementary scripts in `scripts/` (`compare_videos.py`, `check_both_videos.py`, `debug_single_frame.py`, etc.) serve as a lightweight research notebook for probing generalization questions, tuning thresholds, and replicating the domain shift analysis discussed below.
 
 ## Model Generalization and Domain Shift
 
@@ -126,10 +126,10 @@ Cross-video validation highlights expected domain sensitivity. Applying the trai
 
 Video01 contains phases with limited instrument visibility, leading to a 10× drop in coverage relative to Video80. These experiments motivated the semi-supervised workflow now recommended for adapting the model to new procedures:
 
-1. Generate pseudo-labels via `generate_masks_from_model.py` with conservative thresholds.
+1. Generate pseudo-labels via `scripts/generate_masks.py` with conservative thresholds.
 2. Manually correct only erroneous frames instead of labeling from scratch.
-3. Fine-tune using `instrument_segmentation.py` for a handful of epochs.
-4. Validate with `analyze_model.py` or `analyze_generated_masks.py` before deployment.
+3. Fine-tune using `train-segmentation` for a handful of epochs.
+4. Validate with `evaluate-model` or `scripts/analyze_generated_masks.py` before deployment.
 
 ## Validation Results: CholecSeg8k Dataset
 
@@ -191,12 +191,12 @@ Overall Accuracy: 99.47%
 
 ## Generated Figures & Models
 
-- **Model weights:** `instrument_segmentation_model.pth` achieves IoU 87.1% / Dice 93.1% on the validation set.
-- **training_loss.png:** Convergence trace across epochs.
-- **segmentation_results.png**, **impressive_segmentation_results.png**, **best_segmentation_results.png**, **challenging_segmentation_results.png:** Representative qualitative results for publications and committee review.
-- **comprehensive_analysis.png**, **full_dataset_analysis.png**, **full_dataset_complete_analysis.png:** Dashboard visuals summarizing performance at dataset scale.
-- **video01_* / video80_* figures:** Out-of-distribution vs aligned-domain studies illustrating domain shift impacts.
-- **test_mask_thresh03.png**, **test_mask_thresh05.png:** Threshold sensitivity analyses supporting the semi-supervised adaptation plan.
+- **Model weights:** `outputs/models/instrument_segmentation_model.pth` achieves IoU 87.1% / Dice 93.1% on the validation set.
+- **training_loss.png:** Convergence trace across epochs (saved to `outputs/figures/`).
+- **segmentation_results.png**, **impressive_segmentation_results.png**, **best_segmentation_results.png**, **challenging_segmentation_results.png:** Representative qualitative results in `outputs/figures/` for publications and committee review.
+- **comprehensive_analysis.png**, **full_dataset_analysis.png**, **full_dataset_complete_analysis.png:** Dashboard visuals summarizing performance at dataset scale (all under `outputs/figures/`).
+- **video01_* / video80_* figures:** Out-of-distribution vs aligned-domain studies illustrating domain shift impacts (stored in `outputs/figures/`).
+- **test_mask_thresh03.png**, **test_mask_thresh05.png:** Threshold sensitivity analyses supporting the semi-supervised adaptation plan (in `outputs/figures/`).
 
 ## Current Limitations and Future Work
 
@@ -254,7 +254,7 @@ The repository follows a 3-part workflow: Prepare → Train → Apply.
 Organize CholecSeg8k assets into the expected directory structure.
 
 ```bash
-python prepare_cholecseg8k_assets.py \
+python scripts/prepare_cholecseg8k.py \
   --frame-dir /path/to/CholecSeg8k/frame_pngs \
   --mask-dir  /path/to/CholecSeg8k/mask_pngs
 ```
@@ -262,17 +262,18 @@ python prepare_cholecseg8k_assets.py \
 To process the full dataset with standardized naming:
 
 ```bash
-python prepare_full_dataset.py \
-  --source-root /path/to/CholecSeg8k \
-  --output-root data/full_dataset
+python scripts/prepare_full_dataset.py \
+  --source-dir "datasets/Full Dataset" \
+  --output-frame-dir "datasets/Full Dataset/frames" \
+  --output-mask-dir "datasets/Full Dataset/masks"
 ```
 
 ### 2. Train & Evaluate
 
 ```bash
-pip install -r requirements.txt
-python instrument_segmentation.py
-python analyze_model.py \
+pip install -e .
+train-segmentation
+evaluate-model \
   --mode dataset \
   --mask-dir data/masks \
   --pred-dir data/preds \
@@ -283,9 +284,9 @@ python analyze_model.py \
 ### 3. Apply Model to New Videos
 
 ```bash
-python generate_masks_from_model.py \
+python scripts/generate_masks.py \
   --video-path /path/to/new_surgery.mp4 \
-  --model-path instrument_segmentation_model.pth \
+  --model-path outputs/models/instrument_segmentation_model.pth \
   --output-dir data/new_video_output \
   --frame-step 30 \
   --max-frames 500 \
@@ -295,12 +296,12 @@ python generate_masks_from_model.py \
 ### 4. Analyze Generated Masks
 
 ```bash
-python analyze_generated_masks.py \
+python scripts/analyze_generated_masks.py \
   --generated-dir data/new_video_output \
-  --output new_video_visual_analysis.png \
+  --output outputs/figures/new_video_visual_analysis.png \
   --num-samples 10
 
-python analyze_mask_statistics.py \
+python scripts/analyze_mask_statistics.py \
   --generated-dir data/new_video_output
 ```
 
@@ -313,13 +314,11 @@ python analyze_mask_statistics.py \
 
 ## Repository Structure and Assets
 
-- `instrument_segmentation.py` – Primary training/inference script with configurable dataset loader.
-- `analyze_model.py` – Computes dataset-level metrics and figures.
-- `generate_masks_from_model.py` – Runs inference on arbitrary laparoscopic videos.
-- `analyze_generated_masks.py`, `analyze_mask_statistics.py` – Visualization/statistics for generated masks.
-- `prepare_cholecseg8k_assets.py`, `prepare_full_dataset.py` – Data ingestion utilities.
-- `compare_videos.py`, `check_both_videos.py`, `test_single_frame.py` – Exploratory analysis tools used in the generalization study.
-- `/data`, `/datasets`, and the `.png` artifacts – Output directories containing generated masks, analysis figures, and training curves referenced throughout this README.
+- `src/surgical_segmentation/` – Core package (models, datasets, training, evaluation modules).
+- `scripts/` – Data prep, inference, and analysis utilities (`prepare_cholecseg8k.py`, `prepare_full_dataset.py`, `generate_masks.py`, `analyze_generated_masks.py`, `compare_videos.py`, `debug_single_frame.py`, etc.).
+- `outputs/models/` – Saved weights (`instrument_segmentation_model.pth`, comparative checkpoints).
+- `outputs/figures/` – Training curves, evaluation plots, and qualitative visualizations.
+- `/data` and `/datasets` – Input assets and prepared datasets referenced by the scripts.
 
 ## Acknowledgement
 
