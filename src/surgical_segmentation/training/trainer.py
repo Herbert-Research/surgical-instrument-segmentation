@@ -60,6 +60,12 @@ DEFAULT_MODEL_PATH = MODELS_DIR / "instrument_segmentation_model.pth"
 def parse_cli_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Surgical instrument segmentation demo")
     parser.add_argument(
+        "--config",
+        type=Path,
+        default=None,
+        help="Path to YAML configuration file (default: config/default.yaml)",
+    )
+    parser.add_argument(
         "--frame-dir",
         type=Path,
         default=DEFAULT_FRAME_DIR,
@@ -81,6 +87,24 @@ def parse_cli_args() -> argparse.Namespace:
         "--skip-synthetic",
         action="store_true",
         help="Do not create synthetic data even if frame/mask dirs are empty",
+    )
+    parser.add_argument(
+        "--epochs",
+        type=int,
+        default=None,
+        help="Number of training epochs (overrides config file)",
+    )
+    parser.add_argument(
+        "--batch-size",
+        type=int,
+        default=None,
+        help="Batch size for training (overrides config file)",
+    )
+    parser.add_argument(
+        "--learning-rate",
+        type=float,
+        default=None,
+        help="Learning rate (overrides config file)",
     )
     return parser.parse_args()
 
@@ -295,6 +319,49 @@ def create_synthetic_surgical_frames(frame_dir: Path, mask_dir: Path, force: boo
 
 from surgical_segmentation.datasets import SurgicalDataset
 from surgical_segmentation.models.deeplabv3 import InstrumentSegmentationModel
+from surgical_segmentation.utils.config import Config, load_config
+
+
+def load_training_config(
+    config_path: Optional[Path] = None, cli_overrides: Optional[dict] = None
+) -> Config:
+    """
+    Load training configuration from YAML file with CLI overrides.
+
+    Centralizes configuration management by loading from a YAML file and
+    applying any command-line overrides. This enables reproducible experiments
+    while still allowing quick parameter adjustments via CLI.
+
+    Args:
+        config_path: Path to YAML configuration file. If None, uses the
+                     default configuration from config/default.yaml.
+        cli_overrides: Dictionary of CLI arguments to override config values.
+                       Keys should match config attributes (e.g., "epochs").
+                       None values are ignored.
+
+    Returns:
+        Config: Validated configuration object with all parameters.
+
+    Example:
+        >>> config = load_training_config(
+        ...     config_path=Path("config/experiment_01.yaml"),
+        ...     cli_overrides={"epochs": 30, "batch_size": 8}
+        ... )
+        >>> print(config.training.epochs)  # 30 (from CLI override)
+    """
+    # Build override dict for config loader
+    overrides = {}
+    if cli_overrides:
+        if cli_overrides.get("epochs") is not None:
+            overrides["training.epochs"] = cli_overrides["epochs"]
+        if cli_overrides.get("batch_size") is not None:
+            overrides["training.batch_size"] = cli_overrides["batch_size"]
+        if cli_overrides.get("learning_rate") is not None:
+            overrides["training.learning_rate"] = cli_overrides["learning_rate"]
+
+    config = load_config(config_path, override=overrides if overrides else None)
+    return config
+
 
 # %% ============================================
 # PART 3: DATA LOADING
@@ -312,6 +379,7 @@ def train_model(
     num_epochs=15,
     learning_rate=0.001,
     num_classes: int = NUM_CLASSES,
+    config: Optional[Config] = None,
 ):
     """
     Train the segmentation model using weighted cross-entropy loss.
@@ -327,11 +395,14 @@ def train_model(
                       - frames: Tensor of shape (B, 3, H, W)
                       - masks: Tensor of shape (B, H, W) with class indices
         num_epochs: Number of complete passes through the training data.
-                    Default: 15 epochs.
+                    Default: 15 epochs. Overridden by config if provided.
         learning_rate: Initial learning rate for Adam optimizer.
-                       Default: 0.001.
+                       Default: 0.001. Overridden by config if provided.
         num_classes: Number of output classes for loss computation.
                      Default: 2 (background + instrument).
+        config: Optional Config object to override training parameters.
+                If provided, extracts epochs, learning_rate, and class_weights
+                from config.training.
 
     Returns:
         Tuple[nn.Module, List[float]]: Trained model and list of average
@@ -341,7 +412,7 @@ def train_model(
         - Optimizer: Adam with default betas (0.9, 0.999)
         - Loss: CrossEntropyLoss with class weights [1.0, 3.0] to
                 compensate for background-dominant class distribution
-        - Device: Automatically uses CUDA if available
+        - Device: Automatically uses CUDA if available (or from config.hardware)
 
     Example:
         >>> model = InstrumentSegmentationModel(num_classes=2)
@@ -349,21 +420,40 @@ def train_model(
         >>> trained_model, losses = train_model(model, train_loader, num_epochs=10)
         >>> plt.plot(losses)  # Visualize learning curve
 
+        >>> # Using configuration file
+        >>> config = load_config("config/default.yaml")
+        >>> trained_model, losses = train_model(model, train_loader, config=config)
+
     Note:
         This is a simplified training loop for demonstration purposes.
         Production training should include validation monitoring, early
         stopping, learning rate scheduling, and checkpoint saving.
     """
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    # Apply config overrides if provided
+    if config is not None:
+        num_epochs = config.training.epochs
+        learning_rate = config.training.learning_rate
+        num_classes = config.model.num_classes
+        device = torch.device(config.hardware.get_device())
+        instrument_weight = config.training.class_weights.instrument
+    else:
+        device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        instrument_weight = INSTRUMENT_CLASS_WEIGHT
+
     model = model.to(device)
 
     class_weights = torch.ones(num_classes, dtype=torch.float32, device=device)
-    class_weights[1:] = INSTRUMENT_CLASS_WEIGHT
+    class_weights[1:] = instrument_weight
     criterion = nn.CrossEntropyLoss(weight=class_weights)
     optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate)
 
     print(f"\n{'='*70}")
     print(f"Training on device: {device}")
+    if config is not None:
+        print(
+            f"Configuration: epochs={num_epochs}, lr={learning_rate}, "
+            f"instrument_weight={instrument_weight}"
+        )
     print(f"{'='*70}\n")
 
     losses = []

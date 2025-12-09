@@ -1,0 +1,198 @@
+# =============================================================================
+# Surgical Instrument Segmentation - Configuration File
+# =============================================================================
+# This configuration file centralizes all hyperparameters and settings for
+# reproducible training and evaluation. Modify values here rather than in
+# source code to maintain clean separation of concerns.
+#
+# Usage:
+#   from surgical_segmentation.utils.config import load_config
+#   config = load_config("config/default.yaml")
+# =============================================================================
+
+# -----------------------------------------------------------------------------
+# Training Configuration
+# -----------------------------------------------------------------------------
+training:
+  # Number of complete passes through the training dataset
+  epochs: 15
+
+  # Mini-batch size for gradient accumulation
+  # Reduce if encountering CUDA out-of-memory errors
+  batch_size: 4
+
+  # Initial learning rate for Adam optimizer
+  # Default: 1e-4 (conservative for fine-tuning pretrained models)
+  learning_rate: 0.0001
+
+  # L2 regularization coefficient to prevent overfitting
+  weight_decay: 0.0001
+
+  # Random seed for reproducibility across all RNG sources
+  # (Python random, NumPy, PyTorch CPU/CUDA)
+  seed: 42
+
+  # Class weights for handling severe class imbalance
+  # Background typically comprises ~98% of pixels; instruments ~2%
+  class_weights:
+    background: 1.0
+    instrument: 3.0
+
+  # Number of DataLoader worker processes for parallel data loading
+  # Set to 0 for debugging or on systems with limited resources
+  num_workers: 4
+
+  # Pin memory for faster GPU transfer (disable on systems without CUDA)
+  pin_memory: true
+
+# -----------------------------------------------------------------------------
+# Model Configuration
+# -----------------------------------------------------------------------------
+model:
+  # Model architecture identifier
+  # Options: "deeplabv3_resnet50", "deeplabv3_resnet101", "unet"
+  architecture: deeplabv3_resnet50
+
+  # Number of output classes (including background)
+  # 2 = binary segmentation (background + instrument)
+  num_classes: 2
+
+  # Use ImageNet pretrained weights for transfer learning
+  # Strongly recommended for medical imaging with limited data
+  pretrained: true
+
+  # Dropout probability for regularization (if supported by architecture)
+  dropout: 0.1
+
+# -----------------------------------------------------------------------------
+# Data Configuration
+# -----------------------------------------------------------------------------
+data:
+  # Input image dimensions after resizing
+  # Must be divisible by 32 for most encoder-decoder architectures
+  image_size: 256
+
+  # Enable data augmentation during training
+  # Includes: random flips, rotations, color jitter, Gaussian noise
+  augment: true
+
+  # Training/validation split ratio
+  # 0.8 = 80% training, 20% validation
+  train_split: 0.8
+
+  # ImageNet normalization statistics (required for pretrained backbones)
+  normalize:
+    mean: [0.485, 0.456, 0.406]
+    std: [0.229, 0.224, 0.225]
+
+  # CholecSeg8k-specific class ID mapping
+  # Original mask values -> binary instrument mask
+  # Classes 31 (Grasper) and 32 (L-hook) are merged into class 1
+  cholec_instrument_classes: [31, 32]
+
+# -----------------------------------------------------------------------------
+# Augmentation Configuration
+# -----------------------------------------------------------------------------
+augmentation:
+  # Probability of applying horizontal flip
+  horizontal_flip_prob: 0.5
+
+  # Probability of applying vertical flip
+  vertical_flip_prob: 0.3
+
+  # Random rotation range in degrees [-max, +max]
+  rotation_degrees: 15
+
+  # Color jitter parameters (brightness, contrast, saturation, hue)
+  color_jitter:
+    brightness: 0.2
+    contrast: 0.2
+    saturation: 0.2
+    hue: 0.1
+
+  # Gaussian noise standard deviation
+  gaussian_noise_std: 0.02
+
+# -----------------------------------------------------------------------------
+# Paths Configuration
+# -----------------------------------------------------------------------------
+paths:
+  # Input data directories
+  frame_dir: data/sample_frames
+  mask_dir: data/masks
+
+  # Output directories
+  output_dir: outputs
+  model_dir: outputs/models
+  figures_dir: outputs/figures
+  predictions_dir: data/preds
+
+  # Model checkpoint filename
+  model_filename: instrument_segmentation_model.pth
+
+# -----------------------------------------------------------------------------
+# Evaluation Configuration
+# -----------------------------------------------------------------------------
+evaluation:
+  # Metrics to compute during evaluation
+  metrics:
+    - accuracy
+    - iou
+    - dice
+    - precision
+    - recall
+
+  # Confidence threshold for binary predictions
+  threshold: 0.5
+
+  # Save prediction masks during evaluation
+  save_predictions: true
+
+  # Generate visualization figures
+  generate_figures: true
+
+# -----------------------------------------------------------------------------
+# Logging Configuration
+# -----------------------------------------------------------------------------
+logging:
+  # Logging level: DEBUG, INFO, WARNING, ERROR, CRITICAL
+  level: INFO
+
+  # Log to file in addition to console
+  log_to_file: true
+  log_file: outputs/training.log
+
+  # Frequency of logging training progress (in batches)
+  log_interval: 10
+
+# -----------------------------------------------------------------------------
+# Hardware Configuration
+# -----------------------------------------------------------------------------
+hardware:
+  # Force CPU usage even if CUDA is available (for debugging)
+  force_cpu: false
+
+  # Specific CUDA device ID (for multi-GPU systems)
+  # Set to -1 for automatic selection, or 0, 1, etc. for specific GPU
+  cuda_device: -1
+
+  # Enable mixed precision training (FP16) for faster training
+  # Requires CUDA and PyTorch >= 1.6
+  mixed_precision: false
+
+# -----------------------------------------------------------------------------
+# Experiment Tracking (Optional)
+# -----------------------------------------------------------------------------
+experiment:
+  # Experiment name for organization
+  name: surgical_instrument_segmentation
+
+  # Run description/notes
+  description: "Binary segmentation of surgical instruments in laparoscopic video"
+
+  # Tags for filtering experiments
+  tags:
+    - medical-imaging
+    - segmentation
+    - cholecystectomy
+    - deep-learning
