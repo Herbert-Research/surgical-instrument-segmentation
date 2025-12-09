@@ -86,8 +86,25 @@ def parse_cli_args() -> argparse.Namespace:
 
 
 def seed_everything(seed: int = DEFAULT_DATA_SEED) -> None:
-    """Make the demo deterministic across Python, NumPy, and PyTorch."""
+    """
+    Set random seeds for reproducibility across all random number generators.
 
+    Ensures deterministic behavior across Python's random module, NumPy,
+    and PyTorch (CPU and CUDA). Critical for scientific reproducibility
+    in medical AI research where results must be verifiable.
+
+    Args:
+        seed: Integer seed value for all random number generators.
+              Default is 42 (DEFAULT_DATA_SEED).
+
+    Note:
+        Sets torch.backends.cudnn.deterministic = True which may impact
+        performance but ensures reproducible results across runs.
+
+    Example:
+        >>> seed_everything(42)
+        >>> # All subsequent random operations will be deterministic
+    """
     random.seed(seed)
     np.random.seed(seed)
     torch.manual_seed(seed)
@@ -98,7 +115,33 @@ def seed_everything(seed: int = DEFAULT_DATA_SEED) -> None:
 
 
 class AdditiveGaussianNoise:
-    """Inject low-amplitude Gaussian noise after tensor conversion."""
+    """
+    Data augmentation transform that adds Gaussian noise to image tensors.
+
+    Simulates sensor noise and imaging artifacts common in laparoscopic
+    video capture. Applied after tensor conversion but before normalization
+    to maintain realistic noise characteristics.
+
+    Args:
+        std: Standard deviation of Gaussian noise. Default 0.02 provides
+             subtle noise without degrading image quality significantly.
+             Typical range: [0.01, 0.05].
+
+    Attributes:
+        std (float): Noise standard deviation.
+
+    Example:
+        >>> from torchvision import transforms
+        >>> transform = transforms.Compose([
+        ...     transforms.ToTensor(),
+        ...     AdditiveGaussianNoise(std=0.02),
+        ...     transforms.Normalize(mean, std)
+        ... ])
+
+    Note:
+        Output is clamped to [0, 1] to maintain valid tensor value range.
+        If std <= 0, the transform returns the input unchanged.
+    """
 
     def __init__(self, std: float = 0.02):
         self.std = std
@@ -123,8 +166,48 @@ print("=" * 70)
 
 def create_synthetic_surgical_frames(frame_dir: Path, mask_dir: Path, force: bool = False):
     """
-    Create synthetic surgical frames for demonstration
-    In real application, these would be actual laparoscopic video frames
+    Create synthetic surgical frames for demonstration and testing.
+
+    Generates artificial laparoscopic-like images with simulated surgical
+    instruments for pipeline testing when real data is unavailable. The
+    synthetic frames mimic key visual characteristics of laparoscopic surgery:
+    - Pink/red tissue-like background colors
+    - Metallic instrument-like elliptical shapes
+    - Optional smoke/vapor occlusion artifacts
+    - Realistic noise patterns
+
+    Args:
+        frame_dir: Directory path to save generated RGB frame images.
+                   Created if it doesn't exist.
+        mask_dir: Directory path to save corresponding binary masks.
+                  Created if it doesn't exist.
+        force: If True, regenerate data even if directories contain existing
+               files. Default False preserves existing data.
+
+    Returns:
+        bool: True if synthetic data was generated, False if skipped
+              (existing data found and force=False).
+
+    Generated Data:
+        - 20 frames (480x640 RGB PNG images)
+        - 20 corresponding masks (480x640 binary PNG images)
+        - Filenames: frame_XXX.png and mask_XXX.png (zero-padded index)
+
+    Instrument Simulation:
+        - Two elliptical instrument shapes per frame (positions vary)
+        - Instruments rendered with metallic gray colors
+        - Masks encode instrument pixels as class 1, background as class 0
+
+    Example:
+        >>> frame_dir = Path('data/sample_frames')
+        >>> mask_dir = Path('data/masks')
+        >>> created = create_synthetic_surgical_frames(frame_dir, mask_dir)
+        >>> if created:
+        ...     print('Generated new synthetic dataset')
+
+    Note:
+        Synthetic data is for development/testing only. Real clinical
+        applications require actual annotated surgical video data.
     """
     frame_dir.mkdir(parents=True, exist_ok=True)
     mask_dir.mkdir(parents=True, exist_ok=True)
@@ -231,8 +314,45 @@ def train_model(
     num_classes: int = NUM_CLASSES,
 ):
     """
-    Train the segmentation model
-    Note: This is a simplified training loop for demonstration
+    Train the segmentation model using weighted cross-entropy loss.
+
+    Implements a standard deep learning training loop with class-weighted
+    loss to handle the severe class imbalance typical in surgical instrument
+    segmentation (instruments occupy ~2% of pixels).
+
+    Args:
+        model: PyTorch segmentation model (e.g., InstrumentSegmentationModel).
+               Must accept (B, 3, H, W) input and produce (B, C, H, W) output.
+        train_loader: DataLoader yielding (frames, masks) batches where:
+                      - frames: Tensor of shape (B, 3, H, W)
+                      - masks: Tensor of shape (B, H, W) with class indices
+        num_epochs: Number of complete passes through the training data.
+                    Default: 15 epochs.
+        learning_rate: Initial learning rate for Adam optimizer.
+                       Default: 0.001.
+        num_classes: Number of output classes for loss computation.
+                     Default: 2 (background + instrument).
+
+    Returns:
+        Tuple[nn.Module, List[float]]: Trained model and list of average
+        loss values per epoch for learning curve visualization.
+
+    Training Details:
+        - Optimizer: Adam with default betas (0.9, 0.999)
+        - Loss: CrossEntropyLoss with class weights [1.0, 3.0] to
+                compensate for background-dominant class distribution
+        - Device: Automatically uses CUDA if available
+
+    Example:
+        >>> model = InstrumentSegmentationModel(num_classes=2)
+        >>> train_loader = DataLoader(dataset, batch_size=4)
+        >>> trained_model, losses = train_model(model, train_loader, num_epochs=10)
+        >>> plt.plot(losses)  # Visualize learning curve
+
+    Note:
+        This is a simplified training loop for demonstration purposes.
+        Production training should include validation monitoring, early
+        stopping, learning rate scheduling, and checkpoint saving.
     """
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     model = model.to(device)
@@ -280,6 +400,37 @@ def train_model(
 
 
 def confusion_matrix_multiclass(true_mask: np.ndarray, pred_mask: np.ndarray, num_classes: int):
+    """
+    Compute confusion matrix for semantic segmentation masks.
+
+    Efficiently computes the pixel-wise confusion matrix using vectorized
+    operations. Handles arbitrary mask shapes and filters invalid pixels.
+
+    Args:
+        true_mask: Ground truth segmentation mask with integer class labels.
+                   Shape can be (H, W) or any broadcastable shape.
+        pred_mask: Predicted segmentation mask with integer class labels.
+                   Must have same shape as true_mask.
+        num_classes: Total number of classes (including background).
+                     Class indices must be in range [0, num_classes).
+
+    Returns:
+        np.ndarray: Confusion matrix of shape (num_classes, num_classes)
+                    where cm[i, j] = number of pixels with true class i
+                    predicted as class j.
+
+    Example:
+        >>> true = np.array([[0, 0, 1], [0, 1, 1]])
+        >>> pred = np.array([[0, 0, 0], [0, 1, 1]])
+        >>> cm = confusion_matrix_multiclass(true, pred, num_classes=2)
+        >>> cm
+        array([[3, 0],
+               [1, 2]])
+
+    Note:
+        Pixels with class values outside [0, num_classes) are ignored.
+        This handles edge cases like invalid mask regions.
+    """
     cm = np.zeros((num_classes, num_classes), dtype=np.int64)
     valid = (true_mask >= 0) & (true_mask < num_classes)
     true = true_mask[valid].ravel()
@@ -291,6 +442,43 @@ def confusion_matrix_multiclass(true_mask: np.ndarray, pred_mask: np.ndarray, nu
 
 
 def compute_metrics_from_cm(cm: np.ndarray):
+    """
+    Compute segmentation metrics from a confusion matrix.
+
+    Calculates standard semantic segmentation evaluation metrics including
+    precision, recall, IoU (Jaccard Index), and Dice coefficient for each
+    class. These metrics are standard in medical image segmentation and
+    enable comparison with published literature.
+
+    Args:
+        cm: Confusion matrix of shape (num_classes, num_classes) where
+            cm[i, j] = count of pixels with true class i predicted as j.
+
+    Returns:
+        Dict[str, np.ndarray]: Dictionary containing per-class metrics:
+            - 'precision': TP / (TP + FP) for each class
+            - 'recall': TP / (TP + FN) for each class (sensitivity)
+            - 'iou': Intersection over Union (Jaccard Index)
+            - 'dice': Dice coefficient (F1 score)
+            - 'support': Number of ground truth pixels per class
+            - 'accuracy': Overall pixel accuracy (scalar)
+
+    Metric Definitions:
+        - IoU = TP / (TP + FP + FN)
+        - Dice = 2*TP / (2*TP + FP + FN) = 2*IoU / (1 + IoU)
+        - Precision = TP / (TP + FP)
+        - Recall = TP / (TP + FN)
+
+    Example:
+        >>> cm = np.array([[100, 5], [3, 92]])
+        >>> metrics = compute_metrics_from_cm(cm)
+        >>> print(f"IoU: {metrics['iou']}")
+        >>> print(f"Dice: {metrics['dice']}")
+
+    Note:
+        Handles division by zero gracefully by returning 0.0 for
+        undefined metrics (e.g., when a class has no predictions).
+    """
     tp = np.diag(cm).astype(np.float64)
     fp = cm.sum(axis=0) - tp
     fn = cm.sum(axis=1) - tp
@@ -318,7 +506,54 @@ def evaluate_model(
     num_visual_samples: int = 4,
     prediction_dir: Optional[Path] = None,
 ):
-    """Evaluate the model, visualize samples, and optionally export masks."""
+    """
+    Evaluate segmentation model and generate visual comparison outputs.
+
+    Performs comprehensive evaluation including:
+    1. Computing aggregate metrics across all samples
+    2. Generating side-by-side visualizations (frame, ground truth, prediction)
+    3. Optionally exporting predicted masks for downstream analysis
+
+    Args:
+        model: Trained PyTorch segmentation model in eval mode.
+        dataset: SurgicalDataset instance yielding (frame, mask) pairs.
+        num_visual_samples: Number of samples to include in visualization.
+                           Default: 4. Set to 0 to disable visualization.
+        prediction_dir: Optional path to save predicted masks as PNG files.
+                       If None, predictions are not saved to disk.
+
+    Returns:
+        Dict[str, np.ndarray]: Evaluation metrics dictionary containing:
+            - 'precision', 'recall', 'iou', 'dice' (per-class arrays)
+            - 'support' (pixels per class)
+            - 'accuracy' (overall pixel accuracy)
+
+    Side Effects:
+        - Saves visualization to outputs/figures/segmentation_results.png
+        - Optionally saves prediction masks to prediction_dir
+        - Prints formatted metrics table to stdout
+
+    Visualization Output:
+        Creates a figure with num_visual_samples rows and 3 columns:
+        - Column 1: Original frame (denormalized from ImageNet stats)
+        - Column 2: Ground truth segmentation mask
+        - Column 3: Model prediction with IoU/Dice scores
+
+    Example:
+        >>> model = InstrumentSegmentationModel(num_classes=2)
+        >>> model.load_state_dict(torch.load('model.pth'))
+        >>> metrics = evaluate_model(
+        ...     model,
+        ...     val_dataset,
+        ...     num_visual_samples=6,
+        ...     prediction_dir=Path('outputs/predictions')
+        ... )
+        >>> print(f"Mean IoU: {metrics['iou'][1]:.3f}")
+
+    Note:
+        Evaluation runs in torch.no_grad() context to disable gradient
+        computation for memory efficiency during inference.
+    """
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     model.eval()
@@ -416,7 +651,48 @@ def evaluate_model(
 
 
 def main():
-    """Main execution pipeline"""
+    """
+    Main execution pipeline for surgical instrument segmentation.
+
+    Orchestrates the complete training and evaluation workflow:
+    1. Parse command-line arguments for data paths
+    2. Generate synthetic data if needed (for demo purposes)
+    3. Create train/validation split with proper transforms
+    4. Train DeepLabV3+ model with class-weighted loss
+    5. Evaluate on validation set and generate visualizations
+    6. Save trained model weights
+
+    Command Line Arguments:
+        --frame-dir: Directory containing RGB frames (default: data/sample_frames)
+        --mask-dir: Directory containing mask PNGs (default: data/masks)
+        --prediction-dir: Directory for prediction outputs (default: data/preds)
+        --skip-synthetic: Don't create synthetic data if dirs are empty
+
+    Output Files:
+        - outputs/figures/training_loss.png: Learning curve visualization
+        - outputs/figures/segmentation_results.png: Visual comparison
+        - outputs/models/instrument_segmentation_model.pth: Trained weights
+        - data/preds/*.png: Per-frame prediction masks
+
+    Example:
+        # Train on default synthetic data
+        $ python -m surgical_segmentation.training.trainer
+
+        # Train on custom dataset
+        $ python -m surgical_segmentation.training.trainer \
+            --frame-dir datasets/Cholec80/sample_frames \
+            --mask-dir datasets/Cholec80/masks
+
+    Pipeline Details:
+        - Data split: 80% train, 20% validation
+        - Training augmentation: ColorJitter, GaussianNoise
+        - Evaluation: IoU, Dice, Precision, Recall per class
+        - Training: 15 epochs, Adam optimizer, lr=0.001
+
+    Raises:
+        FileNotFoundError: If frame_dir contains no PNG files.
+        RuntimeError: If fewer than 2 frames available for split.
+    """
 
     args = parse_cli_args()
     frame_dir = args.frame_dir.resolve()
