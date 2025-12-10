@@ -621,3 +621,91 @@ class TestEvaluateModelWithVisuals:
         # evaluate_model depends on module-level constants
         assert NUM_CLASSES == 2
         assert len(CLASS_NAMES) == NUM_CLASSES
+
+
+class TestParseCliArgs:
+    """Test CLI argument parsing for trainer."""
+
+    def test_default_frame_dir(self, monkeypatch):
+        """Verify default frame directory."""
+        from surgical_segmentation.training.trainer import DEFAULT_FRAME_DIR, parse_cli_args
+
+        monkeypatch.setattr("sys.argv", ["train-segmentation"])
+        args = parse_cli_args()
+        assert args.frame_dir == DEFAULT_FRAME_DIR
+
+    def test_default_mask_dir(self, monkeypatch):
+        """Verify default mask directory."""
+        from surgical_segmentation.training.trainer import DEFAULT_MASK_DIR, parse_cli_args
+
+        monkeypatch.setattr("sys.argv", ["train-segmentation"])
+        args = parse_cli_args()
+        assert args.mask_dir == DEFAULT_MASK_DIR
+
+    def test_custom_frame_dir(self, monkeypatch, tmp_path):
+        """Verify custom frame directory is parsed."""
+        from surgical_segmentation.training.trainer import parse_cli_args
+
+        custom_dir = tmp_path / "frames"
+        monkeypatch.setattr("sys.argv", ["train-segmentation", "--frame-dir", str(custom_dir)])
+        args = parse_cli_args()
+        assert args.frame_dir == custom_dir
+
+    def test_custom_mask_dir(self, monkeypatch, tmp_path):
+        """Verify custom mask directory is parsed."""
+        from surgical_segmentation.training.trainer import parse_cli_args
+
+        custom_dir = tmp_path / "masks"
+        monkeypatch.setattr("sys.argv", ["train-segmentation", "--mask-dir", str(custom_dir)])
+        args = parse_cli_args()
+        assert args.mask_dir == custom_dir
+
+    def test_epochs_argument(self, monkeypatch):
+        """Verify epochs argument is parsed."""
+        from surgical_segmentation.training.trainer import parse_cli_args
+
+        monkeypatch.setattr("sys.argv", ["train-segmentation", "--epochs", "20"])
+        args = parse_cli_args()
+        assert args.epochs == 20
+
+    def test_batch_size_argument(self, monkeypatch):
+        """Verify batch-size argument is parsed."""
+        from surgical_segmentation.training.trainer import parse_cli_args
+
+        monkeypatch.setattr("sys.argv", ["train-segmentation", "--batch-size", "8"])
+        args = parse_cli_args()
+        assert args.batch_size == 8
+
+    def test_learning_rate_argument(self, monkeypatch):
+        """Verify learning-rate argument is parsed."""
+        from surgical_segmentation.training.trainer import parse_cli_args
+
+        monkeypatch.setattr("sys.argv", ["train-segmentation", "--learning-rate", "0.001"])
+        args = parse_cli_args()
+        assert args.learning_rate == 0.001
+
+    def test_skip_synthetic_flag(self, monkeypatch):
+        """Verify skip-synthetic flag is parsed."""
+        from surgical_segmentation.training.trainer import parse_cli_args
+
+        monkeypatch.setattr("sys.argv", ["train-segmentation", "--skip-synthetic"])
+        args = parse_cli_args()
+        assert args.skip_synthetic is True
+
+    def test_config_argument(self, monkeypatch, tmp_path):
+        """Verify config argument is parsed."""
+        from surgical_segmentation.training.trainer import parse_cli_args
+
+        config_file = tmp_path / "custom.yaml"
+        monkeypatch.setattr("sys.argv", ["train-segmentation", "--config", str(config_file)])
+        args = parse_cli_args()
+        assert args.config == config_file
+
+    def test_prediction_dir_argument(self, monkeypatch, tmp_path):
+        """Verify prediction-dir argument is parsed."""
+        from surgical_segmentation.training.trainer import parse_cli_args
+
+        pred_dir = tmp_path / "predictions"
+        monkeypatch.setattr("sys.argv", ["train-segmentation", "--prediction-dir", str(pred_dir)])
+        args = parse_cli_args()
+        assert args.prediction_dir == pred_dir

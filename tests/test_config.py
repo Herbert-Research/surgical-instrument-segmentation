@@ -416,3 +416,65 @@ class TestLoadConfigWithOverrides:
         assert config.training.batch_size == 32
         # Other values should still have defaults
         assert config.training.learning_rate is not None
+
+
+class TestHardwareConfigCUDA:
+    """Test HardwareConfig CUDA device selection."""
+
+    def test_get_device_returns_cuda_when_available(self, monkeypatch):
+        """Verify get_device returns CUDA device when available."""
+        import torch
+
+        from surgical_segmentation.utils.config import HardwareConfig
+
+        # Mock CUDA as available
+        monkeypatch.setattr(torch.cuda, "is_available", lambda: True)
+
+        config = HardwareConfig(force_cpu=False, cuda_device=0)
+        device = config.get_device()
+        assert device == "cuda:0"
+
+    def test_get_device_returns_cuda_with_custom_device(self, monkeypatch):
+        """Verify get_device returns correct CUDA device number."""
+        import torch
+
+        from surgical_segmentation.utils.config import HardwareConfig
+
+        monkeypatch.setattr(torch.cuda, "is_available", lambda: True)
+
+        config = HardwareConfig(force_cpu=False, cuda_device=1)
+        device = config.get_device()
+        assert device == "cuda:1"
+
+    def test_get_device_returns_cpu_when_cuda_unavailable(self, monkeypatch):
+        """Verify get_device returns CPU when CUDA unavailable."""
+        import torch
+
+        from surgical_segmentation.utils.config import HardwareConfig
+
+        monkeypatch.setattr(torch.cuda, "is_available", lambda: False)
+
+        config = HardwareConfig(force_cpu=False, cuda_device=0)
+        device = config.get_device()
+        assert device == "cpu"
+
+    def test_get_device_returns_cpu_when_force_cpu_true(self):
+        """Verify get_device returns CPU when force_cpu is True."""
+        from surgical_segmentation.utils.config import HardwareConfig
+
+        config = HardwareConfig(force_cpu=True)
+        device = config.get_device()
+        assert device == "cpu"
+
+    def test_get_device_default_cuda_device(self, monkeypatch):
+        """Verify get_device returns 'cuda' when cuda_device is -1."""
+        import torch
+
+        from surgical_segmentation.utils.config import HardwareConfig
+
+        monkeypatch.setattr(torch.cuda, "is_available", lambda: True)
+
+        # cuda_device = -1 means use default cuda device
+        config = HardwareConfig(force_cpu=False, cuda_device=-1)
+        device = config.get_device()
+        assert device == "cuda"

@@ -464,3 +464,345 @@ class TestLoadMaskPredictionPairsValidation:
         """Verify ValueError raised for None directories."""
         with pytest.raises(ValueError, match="Both --mask-dir and --pred-dir"):
             load_mask_prediction_pairs(None, None, max_samples=10)
+
+
+class TestParseArgs:
+    """Test CLI argument parsing."""
+
+    def test_default_mode_is_synthetic(self, monkeypatch):
+        """Verify default mode is synthetic."""
+        from surgical_segmentation.evaluation.analyzer import parse_args
+
+        monkeypatch.setattr("sys.argv", ["analyzer"])
+        args = parse_args()
+        assert args.mode == "synthetic"
+
+    def test_dataset_mode_parsing(self, monkeypatch):
+        """Verify dataset mode is parsed correctly."""
+        from surgical_segmentation.evaluation.analyzer import parse_args
+
+        monkeypatch.setattr("sys.argv", ["analyzer", "--mode", "dataset"])
+        args = parse_args()
+        assert args.mode == "dataset"
+
+    def test_custom_directories(self, monkeypatch, tmp_path):
+        """Verify custom directories are parsed."""
+        from surgical_segmentation.evaluation.analyzer import parse_args
+
+        mask_dir = tmp_path / "masks"
+        pred_dir = tmp_path / "preds"
+        monkeypatch.setattr(
+            "sys.argv",
+            ["analyzer", "--mask-dir", str(mask_dir), "--pred-dir", str(pred_dir)],
+        )
+        args = parse_args()
+        assert args.mask_dir == mask_dir
+        assert args.pred_dir == pred_dir
+
+    def test_samples_argument(self, monkeypatch):
+        """Verify samples argument is parsed."""
+        from surgical_segmentation.evaluation.analyzer import parse_args
+
+        monkeypatch.setattr("sys.argv", ["analyzer", "--samples", "50"])
+        args = parse_args()
+        assert args.samples == 50
+
+    def test_num_classes_argument(self, monkeypatch):
+        """Verify num-classes argument is parsed."""
+        from surgical_segmentation.evaluation.analyzer import parse_args
+
+        monkeypatch.setattr("sys.argv", ["analyzer", "--num-classes", "5"])
+        args = parse_args()
+        assert args.num_classes == 5
+
+    def test_class_names_argument(self, monkeypatch):
+        """Verify class-names argument is parsed."""
+        from surgical_segmentation.evaluation.analyzer import parse_args
+
+        monkeypatch.setattr(
+            "sys.argv", ["analyzer", "--class-names", "background,grasper,scissors"]
+        )
+        args = parse_args()
+        assert args.class_names == "background,grasper,scissors"
+
+    def test_output_argument(self, monkeypatch, tmp_path):
+        """Verify output argument is parsed."""
+        from surgical_segmentation.evaluation.analyzer import parse_args
+
+        output_path = tmp_path / "output.png"
+        monkeypatch.setattr("sys.argv", ["analyzer", "--output", str(output_path)])
+        args = parse_args()
+        assert args.output == output_path
+
+
+class TestRunSyntheticAnalysis:
+    """Test run_synthetic_analysis function with mocked matplotlib."""
+
+    def test_generates_figure(self, tmp_path, monkeypatch):
+        """Verify synthetic analysis generates a figure file."""
+        import argparse
+        from unittest.mock import MagicMock, patch
+
+        from surgical_segmentation.evaluation.analyzer import run_synthetic_analysis
+
+        output_file = tmp_path / "analysis.png"
+        args = argparse.Namespace(output=output_file)
+
+        # Mock matplotlib and seaborn to avoid actual figure generation
+        mock_figure = MagicMock()
+        mock_figure.add_gridspec.return_value = MagicMock()
+        mock_figure.add_subplot.return_value = MagicMock()
+
+        with patch("surgical_segmentation.evaluation.analyzer.plt") as mock_plt:
+            with patch("surgical_segmentation.evaluation.analyzer.sns"):
+                mock_plt.figure.return_value = mock_figure
+                run_synthetic_analysis(args)
+
+                # Verify figure was saved
+                mock_figure.savefig.assert_called_once()
+                mock_plt.close.assert_called_once_with(mock_figure)
+
+    def test_prints_metrics(self, tmp_path, monkeypatch, capsys):
+        """Verify synthetic analysis prints metrics."""
+        import argparse
+        from unittest.mock import MagicMock, patch
+
+        from surgical_segmentation.evaluation.analyzer import run_synthetic_analysis
+
+        output_file = tmp_path / "analysis.png"
+        args = argparse.Namespace(output=output_file)
+
+        mock_figure = MagicMock()
+        mock_figure.add_gridspec.return_value = MagicMock()
+        mock_figure.add_subplot.return_value = MagicMock()
+
+        with patch("surgical_segmentation.evaluation.analyzer.plt") as mock_plt:
+            with patch("surgical_segmentation.evaluation.analyzer.sns"):
+                mock_plt.figure.return_value = mock_figure
+                run_synthetic_analysis(args)
+
+        captured = capsys.readouterr()
+        assert "COMPREHENSIVE EVALUATION METRICS" in captured.out
+        assert "Accuracy" in captured.out
+        assert "Precision" in captured.out
+
+
+class TestRunDatasetAnalysis:
+    """Test run_dataset_analysis function with mocked matplotlib."""
+
+    def test_with_valid_data(self, tmp_path, monkeypatch):
+        """Verify dataset analysis works with valid mask pairs."""
+        import argparse
+        from unittest.mock import MagicMock, patch
+
+        from surgical_segmentation.evaluation.analyzer import run_dataset_analysis
+
+        # Create test mask files
+        mask_dir = tmp_path / "masks"
+        pred_dir = tmp_path / "preds"
+        mask_dir.mkdir()
+        pred_dir.mkdir()
+
+        for i in range(3):
+            gt = np.zeros((64, 64), dtype=np.uint8)
+            gt[20:40, 20:40] = 1
+            pred = np.zeros((64, 64), dtype=np.uint8)
+            pred[22:42, 22:42] = 1
+            Image.fromarray(gt).save(mask_dir / f"frame_{i:03d}.png")
+            Image.fromarray(pred).save(pred_dir / f"frame_{i:03d}.png")
+
+        output_file = tmp_path / "analysis.png"
+        args = argparse.Namespace(
+            mask_dir=mask_dir,
+            pred_dir=pred_dir,
+            samples=10,
+            num_classes=2,
+            class_names=None,
+            output=output_file,
+        )
+
+        mock_figure = MagicMock()
+        mock_figure.add_gridspec.return_value = MagicMock()
+        mock_figure.add_subplot.return_value = MagicMock()
+
+        # Selectively mock only figure creation, not colormap
+        with patch("surgical_segmentation.evaluation.analyzer.plt.figure") as mock_fig:
+            with patch("surgical_segmentation.evaluation.analyzer.plt.close"):
+                with patch("surgical_segmentation.evaluation.analyzer.sns"):
+                    mock_fig.return_value = mock_figure
+                    run_dataset_analysis(args)
+
+                    mock_figure.savefig.assert_called_once()
+
+    def test_with_cholec_class_ids(self, tmp_path, monkeypatch):
+        """Verify dataset analysis handles CholecSeg8k class IDs (31, 32)."""
+        import argparse
+        from unittest.mock import MagicMock, patch
+
+        from surgical_segmentation.evaluation.analyzer import run_dataset_analysis
+
+        mask_dir = tmp_path / "masks"
+        pred_dir = tmp_path / "preds"
+        mask_dir.mkdir()
+        pred_dir.mkdir()
+
+        # Create masks with CholecSeg8k class IDs
+        gt = np.zeros((64, 64), dtype=np.uint8)
+        gt[20:40, 20:40] = 31  # Grasper class ID
+        gt[10:20, 10:20] = 32  # L-hook class ID
+        pred = np.zeros((64, 64), dtype=np.uint8)
+        pred[22:42, 22:42] = 1  # Binary prediction
+        Image.fromarray(gt).save(mask_dir / "frame_000.png")
+        Image.fromarray(pred).save(pred_dir / "frame_000.png")
+
+        output_file = tmp_path / "analysis.png"
+        args = argparse.Namespace(
+            mask_dir=mask_dir,
+            pred_dir=pred_dir,
+            samples=10,
+            num_classes=2,
+            class_names=None,
+            output=output_file,
+        )
+
+        mock_figure = MagicMock()
+        mock_figure.add_gridspec.return_value = MagicMock()
+        mock_figure.add_subplot.return_value = MagicMock()
+
+        with patch("surgical_segmentation.evaluation.analyzer.plt.figure") as mock_fig:
+            with patch("surgical_segmentation.evaluation.analyzer.plt.close"):
+                with patch("surgical_segmentation.evaluation.analyzer.sns"):
+                    mock_fig.return_value = mock_figure
+                    run_dataset_analysis(args)
+
+                    mock_figure.savefig.assert_called_once()
+
+    def test_prints_summary(self, tmp_path, capsys):
+        """Verify dataset analysis prints summary statistics."""
+        import argparse
+        from unittest.mock import MagicMock, patch
+
+        from surgical_segmentation.evaluation.analyzer import run_dataset_analysis
+
+        mask_dir = tmp_path / "masks"
+        pred_dir = tmp_path / "preds"
+        mask_dir.mkdir()
+        pred_dir.mkdir()
+
+        gt = np.zeros((64, 64), dtype=np.uint8)
+        gt[20:40, 20:40] = 1
+        pred = np.zeros((64, 64), dtype=np.uint8)
+        pred[22:42, 22:42] = 1
+        Image.fromarray(gt).save(mask_dir / "frame_000.png")
+        Image.fromarray(pred).save(pred_dir / "frame_000.png")
+
+        output_file = tmp_path / "analysis.png"
+        args = argparse.Namespace(
+            mask_dir=mask_dir,
+            pred_dir=pred_dir,
+            samples=10,
+            num_classes=2,
+            class_names=None,
+            output=output_file,
+        )
+
+        mock_figure = MagicMock()
+        mock_figure.add_gridspec.return_value = MagicMock()
+        mock_figure.add_subplot.return_value = MagicMock()
+
+        with patch("surgical_segmentation.evaluation.analyzer.plt.figure") as mock_fig:
+            with patch("surgical_segmentation.evaluation.analyzer.plt.close"):
+                with patch("surgical_segmentation.evaluation.analyzer.sns"):
+                    mock_fig.return_value = mock_figure
+                    run_dataset_analysis(args)
+
+        captured = capsys.readouterr()
+        assert "REAL DATASET EVALUATION" in captured.out
+        assert "Frames analyzed" in captured.out
+
+    def test_with_no_overlapping_files_raises(self, tmp_path):
+        """Verify dataset analysis raises FileNotFoundError with no overlapping files."""
+        import argparse
+
+        from surgical_segmentation.evaluation.analyzer import run_dataset_analysis
+
+        mask_dir = tmp_path / "masks"
+        pred_dir = tmp_path / "preds"
+        mask_dir.mkdir()
+        pred_dir.mkdir()
+
+        # Create non-overlapping files
+        gt = np.zeros((64, 64), dtype=np.uint8)
+        pred = np.zeros((64, 64), dtype=np.uint8)
+        Image.fromarray(gt).save(mask_dir / "mask_001.png")
+        Image.fromarray(pred).save(pred_dir / "pred_001.png")  # Different name
+
+        output_file = tmp_path / "analysis.png"
+        args = argparse.Namespace(
+            mask_dir=mask_dir,
+            pred_dir=pred_dir,
+            samples=10,
+            num_classes=2,
+            class_names=None,
+            output=output_file,
+        )
+
+        with pytest.raises(FileNotFoundError, match="No overlapping PNG stems"):
+            run_dataset_analysis(args)
+
+
+class TestMainFunction:
+    """Test main() entry point function."""
+
+    def test_main_calls_analyze(self, tmp_path, monkeypatch):
+        """Verify main() calls analyze_model_performance."""
+        from unittest.mock import MagicMock, patch
+
+        from surgical_segmentation.evaluation.analyzer import main
+
+        output_file = tmp_path / "output.png"
+        monkeypatch.setattr("sys.argv", ["analyzer", "--output", str(output_file)])
+
+        mock_analyze = MagicMock()
+        with patch(
+            "surgical_segmentation.evaluation.analyzer.analyze_model_performance",
+            mock_analyze,
+        ):
+            main()
+
+        mock_analyze.assert_called_once()
+
+    def test_main_creates_output_directory(self, tmp_path, monkeypatch):
+        """Verify main() creates parent directory for output."""
+        from unittest.mock import MagicMock, patch
+
+        from surgical_segmentation.evaluation.analyzer import main
+
+        nested_output = tmp_path / "nested" / "dir" / "output.png"
+        monkeypatch.setattr("sys.argv", ["analyzer", "--output", str(nested_output)])
+
+        with patch(
+            "surgical_segmentation.evaluation.analyzer.analyze_model_performance",
+            MagicMock(),
+        ):
+            main()
+
+        assert nested_output.parent.exists()
+
+    def test_main_prints_header(self, tmp_path, monkeypatch, capsys):
+        """Verify main() prints header."""
+        from unittest.mock import MagicMock, patch
+
+        from surgical_segmentation.evaluation.analyzer import main
+
+        output_file = tmp_path / "output.png"
+        monkeypatch.setattr("sys.argv", ["analyzer", "--output", str(output_file)])
+
+        with patch(
+            "surgical_segmentation.evaluation.analyzer.analyze_model_performance",
+            MagicMock(),
+        ):
+            main()
+
+        captured = capsys.readouterr()
+        assert "Running Comprehensive Model Analysis" in captured.out

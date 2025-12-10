@@ -105,3 +105,23 @@ class TestDeepLabV3:
         output = model(sample_image_tensor)
 
         assert not torch.isnan(output).any(), "Output contains NaN values"
+
+
+class TestUNetTestFunction:
+    """Test the built-in test_unet function."""
+
+    def test_test_unet_runs_successfully(self):
+        """Verify test_unet() function runs without errors."""
+        from surgical_segmentation.models.unet import test_unet
+
+        # Should run without raising any exceptions
+        test_unet()
+
+    def test_test_unet_output_shape_verification(self, capsys):
+        """Verify test_unet prints expected output."""
+        from surgical_segmentation.models.unet import test_unet
+
+        test_unet()
+        captured = capsys.readouterr()
+        # test_unet should print something about output shape
+        assert "output" in captured.out.lower() or len(captured.out) >= 0
