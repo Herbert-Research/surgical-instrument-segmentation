@@ -1,5 +1,10 @@
 # Laparoscopic Instrument Segmentation Analytics
 
+[![CI](https://github.com/Herbert-Research/surgical-instrument-segmentation/actions/workflows/ci.yml/badge.svg)](https://github.com/Herbert-Research/surgical-instrument-segmentation/actions/workflows/ci.yml)
+[![codecov](https://codecov.io/gh/Herbert-Research/surgical-instrument-segmentation/branch/main/graph/badge.svg)](https://codecov.io/gh/Herbert-Research/surgical-instrument-segmentation)
+[![Python 3.9+](https://img.shields.io/badge/python-3.9+-blue.svg)](https://www.python.org/downloads/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+
 **Status**: Technical proof-of-concept on public benchmark dataset
 **Application Domain**: General laparoscopic surgery computer vision
 **Validation Dataset**: CholecSeg8k (cholecystectomy procedures)
