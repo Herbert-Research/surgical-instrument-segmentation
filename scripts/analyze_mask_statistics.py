@@ -24,9 +24,9 @@ def analyze_mask_statistics(generated_dir: Path) -> None:
         print("❌ No mask files found!")
         return
 
-    print(f"\n{'='*70}")
-    print(f"MASK STATISTICS SUMMARY")
-    print(f"{'='*70}")
+    print("=" * 70)
+    print("MASK STATISTICS SUMMARY")
+    print("=" * 70)
     print(f"Directory: {generated_dir}")
     print(f"Total masks: {len(mask_files)}")
 
@@ -45,14 +45,13 @@ def analyze_mask_statistics(generated_dir: Path) -> None:
             frames_with_instruments += 1
 
     # Statistics
-    print(f"\nInstrument Detection:")
-    print(
-        f"  Frames with instruments: {frames_with_instruments}/{len(mask_files)} ({frames_with_instruments/len(mask_files)*100:.1f}%)"
-    )
+    print("\nInstrument Detection:")
+    pct = frames_with_instruments / len(mask_files) * 100
+    print(f"  Frames with instruments: {frames_with_instruments}/{len(mask_files)} ({pct:.1f}%)")
     print(f"  Frames without instruments: {len(mask_files) - frames_with_instruments}")
 
     if instrument_coverages:
-        print(f"\nInstrument Coverage (% of pixels):")
+        print("\nInstrument Coverage (% of pixels):")
         print(f"  Mean:   {np.mean(instrument_coverages):.2f}%")
         print(f"  Median: {np.median(instrument_coverages):.2f}%")
         print(f"  Min:    {np.min(instrument_coverages):.2f}%")

@@ -37,7 +37,7 @@ repos:
     rev: 7.0.0
     hooks:
       - id: flake8
-        args: ["--max-line-length=100", "--extend-ignore=E203,E501,W503,F401,F811,E741,F841,F541,E402"]
+        args: ["--max-line-length=100", "--extend-ignore=E203,W503"]
         exclude: ^(\.git|__pycache__|\.venv)
 
   - repo: https://github.com/asottile/pyupgrade

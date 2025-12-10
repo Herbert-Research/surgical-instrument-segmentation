@@ -4,9 +4,6 @@ These tests verify the evaluation metrics and visualization
 pipeline works correctly end-to-end.
 """
 
-import tempfile
-from pathlib import Path
-
 import numpy as np
 import pytest
 import torch

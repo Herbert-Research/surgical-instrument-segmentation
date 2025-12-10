@@ -2,7 +2,6 @@
 
 import numpy as np
 import pytest
-from scipy import stats
 
 from surgical_segmentation.evaluation.statistics import (
     bootstrap_ci,
@@ -223,3 +222,14 @@ class TestPrintSignificanceReport:
         captured = capsys.readouterr()
         assert "BetterModel" in captured.out
         assert "significantly better" in captured.out
+
+    def test_no_significant_difference_message(self, capsys):
+        """Verify 'no significant difference' message when p > 0.05."""
+        # Very similar scores (no significant difference)
+        scores_a = [0.80, 0.80, 0.80, 0.80, 0.80]
+        scores_b = [0.80, 0.80, 0.80, 0.80, 0.80]
+
+        print_significance_report("ModelA", "ModelB", scores_a, scores_b)
+
+        captured = capsys.readouterr()
+        assert "No significant difference" in captured.out

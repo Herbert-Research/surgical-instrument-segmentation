@@ -84,7 +84,7 @@ def parse_args() -> argparse.Namespace:
         "--num-classes",
         type=int,
         default=2,
-        help="Number of segmentation classes (background + instruments). Default is 2 for binary segmentation.",
+        help="Number of segmentation classes (background + instruments). Default: 2.",
     )
     parser.add_argument(
         "--class-names",
@@ -402,8 +402,9 @@ def run_dataset_analysis(args: argparse.Namespace) -> None:
 
         preview = build_preview_image(sample_true, sample_pred, args.num_classes)
         ax_preview.imshow(preview)
+        sample_name = pairs[selected_idx]["name"]
         ax_preview.set_title(
-            f"Sample {pairs[selected_idx]['name']} (GT | Pred) - {max_instrument_pixels} instrument pixels",
+            f"Sample {sample_name} (GT | Pred) - {max_instrument_pixels} instrument pixels",
             fontweight="bold",
         )
         ax_preview.axis("off")

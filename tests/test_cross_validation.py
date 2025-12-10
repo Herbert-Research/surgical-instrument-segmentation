@@ -4,11 +4,11 @@ Tests dataclasses, configuration, and utility functions used in cross-validation
 """
 
 import json
-import tempfile
-from pathlib import Path
 
 import numpy as np
 import pytest
+import torch
+from PIL import Image
 
 from surgical_segmentation.training.cross_validation import (
     DEFAULT_SEED,
@@ -265,9 +265,6 @@ class TestBuildTransforms:
 
     def test_transforms_are_callable(self):
         """Verify transforms can be called."""
-        import numpy as np
-        from PIL import Image
-
         train_tf, val_tf = build_transforms()
 
         # Create dummy image
@@ -282,10 +279,6 @@ class TestBuildTransforms:
 
     def test_transforms_produce_tensors(self):
         """Verify transforms produce tensors."""
-        import numpy as np
-        import torch
-        from PIL import Image
-
         train_tf, val_tf = build_transforms()
         img = Image.fromarray(np.random.randint(0, 255, (256, 256, 3), dtype=np.uint8))
 
@@ -297,9 +290,6 @@ class TestBuildTransforms:
 
     def test_transforms_produce_correct_shape(self):
         """Verify transforms produce (3, 256, 256) tensors."""
-        import numpy as np
-        from PIL import Image
-
         train_tf, val_tf = build_transforms()
         # Input different size
         img = Image.fromarray(np.random.randint(0, 255, (480, 640, 3), dtype=np.uint8))
@@ -331,3 +321,401 @@ class TestConstants:
     def test_default_seed_is_integer(self):
         """Verify DEFAULT_SEED is an integer."""
         assert isinstance(DEFAULT_SEED, int)
+
+
+class TestCrossValidationResultSave:
+    """Test CrossValidationResult.save method."""
+
+    def test_save_creates_json_file(self, tmp_path):
+        """Verify save() creates a valid JSON file."""
+        result = CrossValidationResult()
+        result.folds.append(
+            FoldResult(
+                fold_id=0,
+                val_video="video01",
+                train_videos=["video02", "video03"],
+                iou_instrument=0.85,
+                dice_instrument=0.91,
+                accuracy=0.95,
+                num_train_frames=100,
+                num_val_frames=20,
+            )
+        )
+
+        output_path = tmp_path / "cv_results.json"
+        result.save(output_path)
+
+        assert output_path.exists()
+        loaded = json.loads(output_path.read_text())
+        assert "summary" in loaded
+        assert "folds" in loaded
+        assert loaded["summary"]["mean_iou"] == 0.85
+
+    def test_save_empty_result(self, tmp_path):
+        """Verify save() handles empty results."""
+        result = CrossValidationResult()
+        output_path = tmp_path / "empty_results.json"
+        result.save(output_path)
+
+        assert output_path.exists()
+        loaded = json.loads(output_path.read_text())
+        assert loaded["summary"]["mean_iou"] == 0.0
+        assert loaded["summary"]["num_folds"] == 0
+
+
+class TestGetVideoGroupsEdgeCases:
+    """Test edge cases for get_video_groups function."""
+
+    def test_nonexistent_directory_raises(self, tmp_path):
+        """Verify FileNotFoundError for missing directory."""
+        with pytest.raises(FileNotFoundError):
+            get_video_groups(tmp_path / "nonexistent")
+
+    def test_empty_directory_raises(self, tmp_path):
+        """Verify FileNotFoundError for directory with no PNGs."""
+        empty_dir = tmp_path / "empty"
+        empty_dir.mkdir()
+        with pytest.raises(FileNotFoundError, match="No PNG frames found"):
+            get_video_groups(empty_dir)
+
+    def test_groups_frames_correctly(self, tmp_path):
+        """Verify frames are grouped by video ID."""
+        frame_dir = tmp_path / "frames"
+        frame_dir.mkdir()
+
+        # Create frames from multiple videos
+        (frame_dir / "video01_frame_000001.png").touch()
+        (frame_dir / "video01_frame_000002.png").touch()
+        (frame_dir / "video02_frame_000001.png").touch()
+
+        groups = get_video_groups(frame_dir)
+
+        assert "video01" in groups
+        assert "video02" in groups
+        assert len(groups["video01"]) == 2
+        assert len(groups["video02"]) == 1
+
+
+class TestSeedEverythingCrossValidation:
+    """Test seed_everything function from cross_validation module."""
+
+    def test_seed_makes_numpy_deterministic(self):
+        """Verify seeding makes numpy random deterministic."""
+        from surgical_segmentation.training.cross_validation import seed_everything
+
+        seed_everything(123)
+        first = np.random.rand(10).tolist()
+
+        seed_everything(123)
+        second = np.random.rand(10).tolist()
+
+        assert first == second
+
+    def test_seed_makes_torch_deterministic(self):
+        """Verify seeding makes torch random deterministic."""
+        from surgical_segmentation.training.cross_validation import seed_everything
+
+        seed_everything(456)
+        first = torch.rand(10).tolist()
+
+        seed_everything(456)
+        second = torch.rand(10).tolist()
+
+        assert first == second
+
+
+class TestBuildModel:
+    """Test build_model function."""
+
+    def test_build_deeplabv3(self):
+        """Verify building DeepLabV3 model."""
+        from surgical_segmentation.training.cross_validation import build_model
+
+        model = build_model("deeplabv3", num_classes=2)
+        assert model is not None
+
+    def test_build_unet(self):
+        """Verify building UNet model."""
+        from surgical_segmentation.training.cross_validation import build_model
+
+        model = build_model("unet", num_classes=2)
+        assert model is not None
+
+    def test_invalid_model_class_raises(self):
+        """Verify invalid model class raises ValueError."""
+        from surgical_segmentation.training.cross_validation import build_model
+
+        with pytest.raises(ValueError, match="Unsupported"):
+            build_model("invalid_model")
+
+
+class TestBuildDataloaders:
+    """Test build_dataloaders function."""
+
+    def test_returns_two_dataloaders(self, tmp_path):
+        """Verify function returns train and val dataloaders."""
+        from surgical_segmentation.training.cross_validation import build_dataloaders
+
+        frame_dir = tmp_path / "frames"
+        mask_dir = tmp_path / "masks"
+        frame_dir.mkdir()
+        mask_dir.mkdir()
+
+        # Create sample data
+        for i in range(4):
+            frame = np.random.randint(0, 255, (256, 256, 3), dtype=np.uint8)
+            mask = np.zeros((256, 256), dtype=np.uint8)
+            mask[100:150, 100:150] = 31
+            Image.fromarray(frame).save(frame_dir / f"video01_frame_{i:06d}.png")
+            Image.fromarray(mask).save(mask_dir / f"video01_mask_{i:06d}.png")
+
+        train_frames = [f"video01_frame_{i:06d}.png" for i in range(2)]
+        val_frames = [f"video01_frame_{i:06d}.png" for i in range(2, 4)]
+
+        train_loader, val_loader = build_dataloaders(
+            frame_dir=frame_dir,
+            mask_dir=mask_dir,
+            train_frames=train_frames,
+            val_frames=val_frames,
+            batch_size=2,
+            num_workers=0,
+            device="cpu",
+        )
+
+        assert train_loader is not None
+        assert val_loader is not None
+        assert len(train_loader.dataset) == 2
+        assert len(val_loader.dataset) == 2
+
+
+class TestTrainOneEpoch:
+    """Test train_one_epoch function."""
+
+    def test_returns_float_loss(self, tmp_path):
+        """Verify train_one_epoch returns float loss value."""
+        from surgical_segmentation.training.cross_validation import (
+            build_dataloaders,
+            build_model,
+            train_one_epoch,
+        )
+
+        frame_dir = tmp_path / "frames"
+        mask_dir = tmp_path / "masks"
+        frame_dir.mkdir()
+        mask_dir.mkdir()
+
+        for i in range(4):
+            frame = np.random.randint(0, 255, (256, 256, 3), dtype=np.uint8)
+            mask = np.zeros((256, 256), dtype=np.uint8)
+            mask[100:150, 100:150] = 31
+            Image.fromarray(frame).save(frame_dir / f"video01_frame_{i:06d}.png")
+            Image.fromarray(mask).save(mask_dir / f"video01_mask_{i:06d}.png")
+
+        train_frames = [f"video01_frame_{i:06d}.png" for i in range(4)]
+
+        train_loader, _ = build_dataloaders(
+            frame_dir=frame_dir,
+            mask_dir=mask_dir,
+            train_frames=train_frames,
+            val_frames=train_frames[:1],
+            batch_size=2,
+            num_workers=0,
+            device="cpu",
+        )
+
+        model = build_model("unet", num_classes=2)
+        device = torch.device("cpu")
+        model = model.to(device)
+
+        criterion = torch.nn.CrossEntropyLoss()
+        optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
+
+        loss = train_one_epoch(
+            model=model,
+            dataloader=train_loader,
+            criterion=criterion,
+            optimizer=optimizer,
+            device=device,
+            desc="Test",
+        )
+
+        assert isinstance(loss, float)
+        assert loss >= 0
+
+    def test_handles_deeplabv3_dict_output(self, tmp_path):
+        """Verify train_one_epoch handles DeepLabV3 dict output."""
+        from surgical_segmentation.training.cross_validation import (
+            build_dataloaders,
+            build_model,
+            train_one_epoch,
+        )
+
+        frame_dir = tmp_path / "frames"
+        mask_dir = tmp_path / "masks"
+        frame_dir.mkdir()
+        mask_dir.mkdir()
+
+        for i in range(4):
+            frame = np.random.randint(0, 255, (256, 256, 3), dtype=np.uint8)
+            mask = np.zeros((256, 256), dtype=np.uint8)
+            mask[100:150, 100:150] = 1
+            Image.fromarray(frame).save(frame_dir / f"video01_frame_{i:06d}.png")
+            Image.fromarray(mask).save(mask_dir / f"video01_mask_{i:06d}.png")
+
+        train_frames = [f"video01_frame_{i:06d}.png" for i in range(4)]
+
+        train_loader, _ = build_dataloaders(
+            frame_dir=frame_dir,
+            mask_dir=mask_dir,
+            train_frames=train_frames,
+            val_frames=train_frames[:1],
+            batch_size=2,
+            num_workers=0,
+            device="cpu",
+        )
+
+        # Use DeepLabV3 which returns dict output
+        model = build_model("deeplabv3", num_classes=2)
+        device = torch.device("cpu")
+        model = model.to(device)
+
+        criterion = torch.nn.CrossEntropyLoss()
+        optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
+
+        loss = train_one_epoch(
+            model=model,
+            dataloader=train_loader,
+            criterion=criterion,
+            optimizer=optimizer,
+            device=device,
+            desc="Test",
+        )
+
+        assert isinstance(loss, float)
+        assert loss >= 0
+
+
+class TestEvaluateModelCV:
+    """Test evaluate_model function from cross_validation module."""
+
+    def test_returns_metrics_dict(self, tmp_path):
+        """Verify evaluate_model returns metrics dictionary."""
+        from surgical_segmentation.training.cross_validation import (
+            build_dataloaders,
+            build_model,
+            evaluate_model,
+        )
+
+        frame_dir = tmp_path / "frames"
+        mask_dir = tmp_path / "masks"
+        frame_dir.mkdir()
+        mask_dir.mkdir()
+
+        for i in range(4):
+            frame = np.random.randint(0, 255, (256, 256, 3), dtype=np.uint8)
+            mask = np.zeros((256, 256), dtype=np.uint8)
+            mask[100:150, 100:150] = 31
+            Image.fromarray(frame).save(frame_dir / f"video01_frame_{i:06d}.png")
+            Image.fromarray(mask).save(mask_dir / f"video01_mask_{i:06d}.png")
+
+        val_frames = [f"video01_frame_{i:06d}.png" for i in range(4)]
+
+        _, val_loader = build_dataloaders(
+            frame_dir=frame_dir,
+            mask_dir=mask_dir,
+            train_frames=val_frames[:2],
+            val_frames=val_frames[2:],
+            batch_size=2,
+            num_workers=0,
+            device="cpu",
+        )
+
+        model = build_model("unet", num_classes=2)
+        device = torch.device("cpu")
+        model = model.to(device)
+
+        metrics = evaluate_model(model, val_loader, device, num_classes=2)
+
+        assert "accuracy" in metrics
+        assert "iou" in metrics
+        assert "dice" in metrics
+        assert "precision" in metrics
+        assert "recall" in metrics
+
+    def test_with_deeplabv3(self, tmp_path):
+        """Verify evaluate_model handles DeepLabV3 dict output."""
+        from surgical_segmentation.training.cross_validation import (
+            build_dataloaders,
+            build_model,
+            evaluate_model,
+        )
+
+        frame_dir = tmp_path / "frames"
+        mask_dir = tmp_path / "masks"
+        frame_dir.mkdir()
+        mask_dir.mkdir()
+
+        for i in range(4):
+            frame = np.random.randint(0, 255, (256, 256, 3), dtype=np.uint8)
+            mask = np.zeros((256, 256), dtype=np.uint8)
+            mask[100:150, 100:150] = 1
+            Image.fromarray(frame).save(frame_dir / f"video01_frame_{i:06d}.png")
+            Image.fromarray(mask).save(mask_dir / f"video01_mask_{i:06d}.png")
+
+        val_frames = [f"video01_frame_{i:06d}.png" for i in range(4)]
+
+        _, val_loader = build_dataloaders(
+            frame_dir=frame_dir,
+            mask_dir=mask_dir,
+            train_frames=val_frames[:2],
+            val_frames=val_frames[2:],
+            batch_size=2,
+            num_workers=0,
+            device="cpu",
+        )
+
+        # Use DeepLabV3 which returns dict output
+        model = build_model("deeplabv3", num_classes=2)
+        device = torch.device("cpu")
+        model = model.to(device)
+
+        metrics = evaluate_model(model, val_loader, device, num_classes=2)
+
+        assert "iou_instrument" in metrics
+        assert "dice_instrument" in metrics
+
+
+class TestConfusionMatrixMulticlassCV:
+    """Test confusion_matrix_multiclass from cross_validation module."""
+
+    def test_perfect_prediction(self):
+        """Verify perfect prediction has diagonal matrix."""
+        from surgical_segmentation.training.cross_validation import confusion_matrix_multiclass
+
+        true = np.array([[0, 0], [1, 1]], dtype=np.uint8)
+        pred = np.array([[0, 0], [1, 1]], dtype=np.uint8)
+
+        cm = confusion_matrix_multiclass(true, pred, num_classes=2)
+
+        assert cm[0, 0] == 2
+        assert cm[1, 1] == 2
+        assert cm[0, 1] == 0
+        assert cm[1, 0] == 0
+
+
+class TestComputeMetricsFromCMCV:
+    """Test compute_metrics_from_cm from cross_validation module."""
+
+    def test_returns_all_metrics(self):
+        """Verify function returns all expected metrics."""
+        from surgical_segmentation.training.cross_validation import compute_metrics_from_cm
+
+        cm = np.array([[50, 10], [5, 35]], dtype=np.int64)
+
+        metrics = compute_metrics_from_cm(cm)
+
+        assert "accuracy" in metrics
+        assert "precision" in metrics
+        assert "recall" in metrics
+        assert "iou" in metrics
+        assert "dice" in metrics

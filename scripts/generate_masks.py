@@ -283,15 +283,15 @@ def main() -> None:
         confidence_threshold=args.confidence_threshold,
     )
 
-    print(f"\n✓ Processing complete!")
+    print("\n✓ Processing complete!")
     print(f"  Frames saved: {frames_saved}")
     print(f"  Output directory: {args.output_dir}")
-    print(f"  Files are named: videoXX_NNNNNN_frame.png and videoXX_NNNNNN_mask.png")
-    print(f"  (sorted alphabetically, frames and masks alternate)")
-    print(f"\nThese outputs can now be used with train-segmentation for:")
-    print(f"  - Fine-tuning on new surgical procedures")
-    print(f"  - Bootstrapping semi-supervised annotation")
-    print(f"  - Quality assessment and validation")
+    print("  Files are named: videoXX_NNNNNN_frame.png and videoXX_NNNNNN_mask.png")
+    print("  (sorted alphabetically, frames and masks alternate)")
+    print("\nThese outputs can now be used with train-segmentation for:")
+    print("  - Fine-tuning on new surgical procedures")
+    print("  - Bootstrapping semi-supervised annotation")
+    print("  - Quality assessment and validation")
 
 
 if __name__ == "__main__":

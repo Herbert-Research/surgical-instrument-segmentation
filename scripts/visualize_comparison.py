@@ -8,7 +8,6 @@ import json
 from pathlib import Path
 
 import matplotlib.pyplot as plt
-import numpy as np
 import seaborn as sns
 
 
@@ -157,8 +156,14 @@ def generate_comparison_table(results: dict, output_path: Path):
     """Generate markdown table for README."""
 
     table = "## Model Comparison Results\n\n"
-    table += "| Architecture | IoU (Instrument) | Dice (Instrument) | Accuracy | Parameters | Training Time |\n"
-    table += "|-------------|-----------------|-------------------|----------|------------|---------------|\n"
+    table += (
+        "| Architecture | IoU (Instrument) | Dice (Instrument) "
+        "| Accuracy | Parameters | Training Time |\n"
+    )
+    table += (
+        "|-------------|-----------------|-------------------"
+        "|----------|------------|---------------|\n"
+    )
 
     for arch, data in results.items():
         metrics = data["final_metrics"]
@@ -189,7 +194,10 @@ def generate_comparison_table(results: dict, output_path: Path):
 
     param_ratio = results["deeplabv3"]["parameters"] / results["unet"]["parameters"]
     table += f"DeepLabV3 has {param_ratio:.1f}× more parameters than U-Net, "
-    table += "providing stronger feature representations at the cost of increased computational requirements.\n"
+    table += (
+        "providing stronger feature representations "
+        "at the cost of increased computational requirements.\n"
+    )
 
     with open(output_path, "w", encoding="utf-8") as f:
         f.write(table)

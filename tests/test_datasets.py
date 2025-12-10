@@ -1,9 +1,5 @@
 """Tests for dataset loading and preprocessing."""
 
-import os
-import tempfile
-from pathlib import Path
-
 import numpy as np
 import pytest
 import torch

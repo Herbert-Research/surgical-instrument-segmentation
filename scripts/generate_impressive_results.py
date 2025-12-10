@@ -105,7 +105,7 @@ def generate_visualization(
 
             frame_path = frame_dir / frame_name
             mask_path = mask_dir / mask_name
-            pred_path = pred_dir / mask_name
+            # pred_path would be: pred_dir / mask_name (unused in visualization)
 
             if not frame_path.exists():
                 print(f"Warning: Frame not found: {frame_path}")

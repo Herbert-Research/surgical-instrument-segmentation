@@ -2,8 +2,6 @@
 
 from __future__ import annotations
 
-from typing import List, Tuple
-
 import numpy as np
 from scipy import stats
 
@@ -62,16 +60,16 @@ def print_significance_report(
     mean_b, lower_b, upper_b = bootstrap_ci(scores_b)
     t_stat, p_value, is_sig = paired_ttest(scores_a, scores_b)
 
-    print(f"\n{'='*60}")
+    print("\n" + "=" * 60)
     print(f"STATISTICAL COMPARISON: {metric_name}")
-    print(f"{'='*60}")
+    print("=" * 60)
     print(f"\n{model_a_name}:")
     print(f"  Mean {metric_name}: {mean_a:.4f}")
     print(f"  95% CI: [{lower_a:.4f}, {upper_a:.4f}]")
     print(f"\n{model_b_name}:")
     print(f"  Mean {metric_name}: {mean_b:.4f}")
     print(f"  95% CI: [{lower_b:.4f}, {upper_b:.4f}]")
-    print(f"\nPaired t-test:")
+    print("\nPaired t-test:")
     print(f"  t-statistic: {t_stat:.4f}")
     print(f"  p-value: {p_value:.6f}")
     print(f"  Significant at α=0.05: {'YES' if is_sig else 'NO'}")

@@ -16,7 +16,6 @@ import argparse
 import re
 import shutil
 from pathlib import Path
-from typing import Dict
 
 FRAME_PATTERN = re.compile(r"^frame_(\d+)_endo$", re.IGNORECASE)
 MASK_PATTERN = re.compile(r"^frame_(\d+)_endo_watershed_mask$", re.IGNORECASE)
@@ -115,7 +114,7 @@ def process_video_directory(
 
     paired_indices = sorted(set(frame_sources.keys()) & set(mask_sources.keys()))
     if not paired_indices:
-        print(f"  ⚠ No overlapping indices between frames and masks")
+        print("  ⚠ No overlapping indices between frames and masks")
         return 0
 
     print(f"  Processing {len(paired_indices)} paired images...")
@@ -161,12 +160,12 @@ def main() -> None:
     if not args.dry_run:
         args.output_frame_dir.mkdir(parents=True, exist_ok=True)
         args.output_mask_dir.mkdir(parents=True, exist_ok=True)
-        print(f"Output directories:")
+        print("Output directories:")
         print(f"  Frames: {args.output_frame_dir}")
         print(f"  Masks:  {args.output_mask_dir}")
     else:
         print("DRY RUN MODE - No files will be copied")
-        print(f"Would create output directories:")
+        print("Would create output directories:")
         print(f"  Frames: {args.output_frame_dir}")
         print(f"  Masks:  {args.output_mask_dir}")
 
@@ -205,22 +204,22 @@ def main() -> None:
             total_pairs += pairs_processed
             processed_videos += 1
 
-    print(f"\n{'='*70}")
+    print("\n" + "=" * 70)
     print("PROCESSING COMPLETE")
-    print(f"{'='*70}")
+    print("=" * 70)
     print(f"Videos processed: {processed_videos}/{len(video_dirs)}")
     print(f"Total frame-mask pairs: {total_pairs}")
 
     if not args.dry_run:
-        print(f"\nProcessed files saved to:")
+        print("\nProcessed files saved to:")
         print(f"  Frames: {args.output_frame_dir}")
         print(f"  Masks:  {args.output_mask_dir}")
-        print(f"\nYou can now train the model using:")
-        print(f"  python -m surgical_segmentation.training.trainer \\")
+        print("\nYou can now train the model using:")
+        print("  python -m surgical_segmentation.training.trainer \\")
         print(f'      --frame-dir "{args.output_frame_dir}" \\')
         print(f'      --mask-dir "{args.output_mask_dir}"')
     else:
-        print(f"\nThis was a dry run. Run without --dry-run to actually copy files.")
+        print("\nThis was a dry run. Run without --dry-run to actually copy files.")
 
 
 if __name__ == "__main__":

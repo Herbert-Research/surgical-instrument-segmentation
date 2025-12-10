@@ -309,7 +309,7 @@ def create_synthetic_surgical_frames(frame_dir: Path, mask_dir: Path, force: boo
         cv2.imwrite(str(frame_dir / f"frame_{i:03d}.png"), frame)
         cv2.imwrite(str(mask_dir / f"mask_{i:03d}.png"), mask)
 
-    print(f"✓ Created 20 synthetic surgical frames")
+    print("✓ Created 20 synthetic surgical frames")
     return True
 
 
@@ -317,9 +317,10 @@ def create_synthetic_surgical_frames(frame_dir: Path, mask_dir: Path, force: boo
 # PART 2: MODEL DEFINITION
 # ============================================
 
-from surgical_segmentation.datasets import SurgicalDataset
-from surgical_segmentation.models.deeplabv3 import InstrumentSegmentationModel
-from surgical_segmentation.utils.config import Config, load_config
+# Deferred imports to avoid circular dependencies (these modules import from trainer)
+from surgical_segmentation.datasets import SurgicalDataset  # noqa: E402, F811
+from surgical_segmentation.models.deeplabv3 import InstrumentSegmentationModel  # noqa: E402, F811
+from surgical_segmentation.utils.config import Config, load_config  # noqa: E402, F811
 
 
 def load_training_config(
@@ -857,7 +858,7 @@ def main():
 
     train_loader = torch.utils.data.DataLoader(train_dataset, batch_size=4, shuffle=True)
 
-    print(f"\nDataset Summary:")
+    print("\nDataset Summary:")
     print(f"  - Total frames: {total_frames}")
     print(f"  - Training frames: {len(train_dataset)} (augmentations enabled)")
     print(f"  - Validation frames: {len(val_dataset)}")

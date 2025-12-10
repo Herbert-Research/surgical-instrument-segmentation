@@ -27,7 +27,7 @@ import time
 from dataclasses import asdict, dataclass
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 import numpy as np
 
@@ -387,7 +387,7 @@ def main() -> None:
     else:
         devices = ["cpu"]
 
-    print(f"\nBenchmark Configuration:")
+    print("\nBenchmark Configuration:")
     print(f"  Input sizes:  {args.input_sizes}")
     print(f"  Batch sizes:  {args.batch_sizes}")
     print(f"  Devices:      {devices}")
@@ -436,7 +436,7 @@ def main() -> None:
                     )
                 except RuntimeError as e:
                     if "out of memory" in str(e).lower():
-                        print(f"    ⚠️ Out of memory - skipping this configuration")
+                        print("    ⚠️ Out of memory - skipping this configuration")
                         if device == "cuda":
                             torch.cuda.empty_cache()
                     else:

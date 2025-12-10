@@ -3,9 +3,6 @@
 Tests metric computation, confusion matrices, and helper functions.
 """
 
-import tempfile
-from pathlib import Path
-
 import numpy as np
 import pytest
 from PIL import Image
@@ -397,3 +394,73 @@ class TestDefaultClassNames:
     def test_default_includes_background(self):
         """Verify background is in default names."""
         assert "background" in DEFAULT_CLASS_NAMES
+
+
+class TestLoadMaskPredictionPairsExtra:
+    """Additional tests for load_mask_prediction_pairs function."""
+
+    def test_handles_mismatched_sizes(self, tmp_path):
+        """Verify function handles masks of different sizes."""
+        gt_dir = tmp_path / "gt"
+        pred_dir = tmp_path / "pred"
+        gt_dir.mkdir()
+        pred_dir.mkdir()
+
+        # Create masks with different sizes
+        gt_mask = np.zeros((100, 100), dtype=np.uint8)
+        pred_mask = np.zeros((50, 50), dtype=np.uint8)
+        Image.fromarray(gt_mask).save(gt_dir / "test.png")
+        Image.fromarray(pred_mask).save(pred_dir / "test.png")
+
+        pairs = load_mask_prediction_pairs(gt_dir, pred_dir, max_samples=10)
+
+        # Should resize pred to match gt
+        assert len(pairs) == 1
+        assert pairs[0]["true"].shape == pairs[0]["pred"].shape
+
+
+class TestAnalyzeModelPerformance:
+    """Test analyze_model_performance dispatch function."""
+
+    def test_dispatches_to_synthetic(self, tmp_path, monkeypatch):
+        """Verify synthetic mode is dispatched correctly."""
+        import argparse
+        from unittest.mock import MagicMock
+
+        from surgical_segmentation.evaluation.analyzer import analyze_model_performance
+
+        mock_synthetic = MagicMock()
+        monkeypatch.setattr(
+            "surgical_segmentation.evaluation.analyzer.run_synthetic_analysis", mock_synthetic
+        )
+
+        args = argparse.Namespace(mode="synthetic")
+        analyze_model_performance(args)
+
+        mock_synthetic.assert_called_once_with(args)
+
+    def test_dispatches_to_dataset(self, tmp_path, monkeypatch):
+        """Verify dataset mode is dispatched correctly."""
+        import argparse
+        from unittest.mock import MagicMock
+
+        from surgical_segmentation.evaluation.analyzer import analyze_model_performance
+
+        mock_dataset = MagicMock()
+        monkeypatch.setattr(
+            "surgical_segmentation.evaluation.analyzer.run_dataset_analysis", mock_dataset
+        )
+
+        args = argparse.Namespace(mode="dataset")
+        analyze_model_performance(args)
+
+        mock_dataset.assert_called_once_with(args)
+
+
+class TestLoadMaskPredictionPairsValidation:
+    """Test load_mask_prediction_pairs validation."""
+
+    def test_raises_on_none_dirs(self):
+        """Verify ValueError raised for None directories."""
+        with pytest.raises(ValueError, match="Both --mask-dir and --pred-dir"):
+            load_mask_prediction_pairs(None, None, max_samples=10)

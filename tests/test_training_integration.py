@@ -4,9 +4,6 @@ These tests verify the complete training loop works end-to-end,
 from data loading through model optimization.
 """
 
-import tempfile
-from pathlib import Path
-
 import numpy as np
 import pytest
 import torch

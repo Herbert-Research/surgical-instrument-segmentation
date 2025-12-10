@@ -19,7 +19,7 @@ Usage:
 
 import argparse
 from pathlib import Path
-from typing import Dict, List, Optional, Tuple
+from typing import Optional
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -65,7 +65,7 @@ def load_generated_pairs(generated_dir: Path) -> list[tuple[Path, Path]]:
     all_files = sorted(generated_dir.glob("*.png"))
 
     frames = [f for f in all_files if "_frame.png" in f.name]
-    masks = [f for f in all_files if "_mask.png" in f.name]
+    # Note: masks variable not used here - pairs constructed from frames
 
     pairs = []
     for frame_path in frames:
@@ -226,7 +226,7 @@ def analyze_with_ground_truth(
         avg_precision = np.mean([m["precision"] for m in all_metrics])
         avg_recall = np.mean([m["recall"] for m in all_metrics])
 
-        print(f"\n  Average Metrics:")
+        print("\n  Average Metrics:")
         print(f"    IoU:       {avg_iou:.3f}")
         print(f"    Dice:      {avg_dice:.3f}")
         print(f"    Precision: {avg_precision:.3f}")

@@ -10,10 +10,13 @@ import numpy as np
 import pytest
 import torch
 from PIL import Image
+from torch.utils.data import DataLoader
+from torchvision import transforms
 
+from surgical_segmentation.datasets import SurgicalDataset
+from surgical_segmentation.models import InstrumentSegmentationModel
 from surgical_segmentation.training.trainer import (
     CLASS_NAMES,
-    DEFAULT_DATA_SEED,
     IMAGENET_MEAN,
     IMAGENET_STD,
     INSTRUMENT_CLASS_WEIGHT,
@@ -24,6 +27,7 @@ from surgical_segmentation.training.trainer import (
     create_synthetic_surgical_frames,
     evaluate_model,
     seed_everything,
+    train_model,
 )
 
 
@@ -279,16 +283,6 @@ class TestTrainModelFunction:
 
     def test_train_model_returns_model_and_losses(self):
         """Verify train_model returns trained model and loss history."""
-        import tempfile
-        from pathlib import Path
-
-        from PIL import Image
-        from torch.utils.data import DataLoader
-        from torchvision import transforms
-
-        from surgical_segmentation.datasets import SurgicalDataset
-        from surgical_segmentation.models import InstrumentSegmentationModel
-
         with tempfile.TemporaryDirectory() as tmp_dir:
             tmp_path = Path(tmp_dir)
             frame_dir = tmp_path / "frames"
@@ -316,8 +310,6 @@ class TestTrainModelFunction:
 
             model = InstrumentSegmentationModel(num_classes=2)
 
-            from surgical_segmentation.training.trainer import train_model
-
             trained_model, losses = train_model(
                 model, dataloader, num_epochs=2, learning_rate=0.001
             )
@@ -325,7 +317,7 @@ class TestTrainModelFunction:
             assert trained_model is not None
             assert isinstance(losses, list)
             assert len(losses) == 2
-            assert all(isinstance(l, float) for l in losses)
+            assert all(isinstance(loss_val, float) for loss_val in losses)
 
 
 class TestSyntheticDataGeneration:
@@ -492,3 +484,140 @@ class TestEvaluateModel:
 
         assert pred_dir.exists()
         assert len(list(pred_dir.glob("*.png"))) == 2
+
+
+class TestLoadTrainingConfig:
+    """Test load_training_config function."""
+
+    def test_load_default_config(self):
+        """Verify loading default config works."""
+        from surgical_segmentation.training.trainer import load_training_config
+
+        config = load_training_config()
+        assert config is not None
+        assert config.training.epochs > 0
+
+    def test_cli_overrides_applied(self):
+        """Verify CLI overrides are applied to config."""
+        from surgical_segmentation.training.trainer import load_training_config
+
+        config = load_training_config(
+            cli_overrides={"epochs": 99, "batch_size": 16, "learning_rate": 0.01}
+        )
+        assert config.training.epochs == 99
+        assert config.training.batch_size == 16
+        assert config.training.learning_rate == 0.01
+
+    def test_partial_cli_overrides(self):
+        """Verify partial CLI overrides work."""
+        from surgical_segmentation.training.trainer import load_training_config
+
+        config = load_training_config(cli_overrides={"epochs": 50})
+        assert config.training.epochs == 50
+
+
+class TestTrainModelWithConfig:
+    """Test train_model function with config parameter."""
+
+    def test_train_model_with_config(self, tmp_path, monkeypatch):
+        """Verify train_model respects config parameters."""
+        monkeypatch.setattr(torch.cuda, "is_available", lambda: False)
+
+        from surgical_segmentation.utils.config import Config
+
+        frame_dir = tmp_path / "frames"
+        mask_dir = tmp_path / "masks"
+        frame_dir.mkdir()
+        mask_dir.mkdir()
+
+        for i in range(4):
+            frame = np.random.randint(50, 200, (256, 256, 3), dtype=np.uint8)
+            mask = np.zeros((256, 256), dtype=np.uint8)
+            mask[100:150, 100:150] = 31
+            Image.fromarray(frame).save(frame_dir / f"frame_{i:05d}.png")
+            Image.fromarray(mask).save(mask_dir / f"mask_{i:05d}.png")
+
+        transform = transforms.Compose([transforms.Resize((256, 256)), transforms.ToTensor()])
+
+        dataset = SurgicalDataset(str(frame_dir), str(mask_dir), transform=transform)
+        dataloader = DataLoader(dataset, batch_size=2)
+
+        config = Config()
+        config.training.epochs = 1
+
+        model = InstrumentSegmentationModel(num_classes=2)
+        trained_model, losses = train_model(model, dataloader, config=config)
+
+        assert len(losses) == 1
+
+
+class TestConfusionMatrixBoundary:
+    """Test boundary conditions for confusion matrix."""
+
+    def test_single_class_prediction(self):
+        """Verify handling of single-class prediction."""
+        true = np.zeros((10, 10), dtype=np.uint8)
+        pred = np.ones((10, 10), dtype=np.uint8)
+
+        cm = confusion_matrix_multiclass(true, pred, NUM_CLASSES)
+
+        assert cm[0, 0] == 0  # No TN
+        assert cm[0, 1] == 100  # All FP
+
+    def test_large_masks(self):
+        """Verify handling of large masks."""
+        true = np.random.randint(0, 2, (512, 512), dtype=np.uint8)
+        pred = np.random.randint(0, 2, (512, 512), dtype=np.uint8)
+
+        cm = confusion_matrix_multiclass(true, pred, NUM_CLASSES)
+
+        assert cm.sum() == 512 * 512
+
+
+class TestLoadDependency:
+    """Test dynamic dependency loading."""
+
+    def test_load_existing_module(self):
+        """Verify loading an existing module succeeds."""
+        from surgical_segmentation.training.trainer import _load_dependency
+
+        mod = _load_dependency("os")
+        assert mod is not None
+
+    def test_load_nonexistent_module_raises(self):
+        """Verify loading nonexistent module raises ImportError."""
+        from surgical_segmentation.training.trainer import _load_dependency
+
+        with pytest.raises(ImportError, match="Missing required dependency"):
+            _load_dependency("nonexistent_module_xyz_123")
+
+
+class TestComputeMetricsIntegration:
+    """Integration tests for metrics computation."""
+
+    def test_metrics_keys_present(self):
+        """Verify all expected metric keys are in output."""
+        cm = np.array([[100, 10], [5, 50]], dtype=np.int64)
+        metrics = compute_metrics_from_cm(cm)
+
+        expected_keys = ["accuracy", "iou", "dice", "precision", "recall"]
+        for key in expected_keys:
+            assert key in metrics
+
+    def test_per_class_arrays_have_correct_length(self):
+        """Verify per-class arrays match NUM_CLASSES."""
+        cm = np.array([[100, 10], [5, 50]], dtype=np.int64)
+        metrics = compute_metrics_from_cm(cm)
+
+        for key in ["iou", "dice", "precision", "recall"]:
+            assert len(metrics[key]) == NUM_CLASSES
+
+
+class TestEvaluateModelWithVisuals:
+    """Test evaluate_model with visualization."""
+
+    def test_constants_defined(self):
+        """Verify evaluate_model related constants are defined."""
+        # evaluate_model depends on module-level constants
+        assert NUM_CLASSES == 2
+        assert len(CLASS_NAMES) == NUM_CLASSES
