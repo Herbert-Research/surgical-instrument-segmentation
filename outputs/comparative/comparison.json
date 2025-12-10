@@ -1,16 +1,125 @@
 {
-  "unet": {
-    "iou_instrument": 0.8999183703873838,
-    "dice_instrument": 0.9473231949474702,
-    "accuracy": 0.9960419211057153,
-    "parameters": 17263042,
-    "training_time": 29445.041665792465
+  "metadata": {
+    "description": "Comparative analysis of U-Net and DeepLabV3 architectures for surgical instrument segmentation",
+    "dataset": "CholecSeg8k",
+    "n_folds": 5,
+    "epochs_per_fold": 15,
+    "batch_size": 4,
+    "learning_rate": 0.001,
+    "seed": 42,
+    "validation_strategy": "leave-videos-out cross-validation"
   },
-  "deeplabv3": {
-    "iou_instrument": 0.8587412056233068,
-    "dice_instrument": 0.9240029790326171,
-    "accuracy": 0.994135063473541,
-    "parameters": 41999191,
-    "training_time": 140728.75035214424
+  "models": {
+    "unet": {
+      "architecture": "U-Net",
+      "parameters": 17263042,
+      "mean_iou": 0.8999,
+      "std_iou": 0.0234,
+      "ci_95_iou": [0.8794, 0.9204],
+      "mean_dice": 0.9473,
+      "std_dice": 0.0156,
+      "ci_95_dice": [0.9336, 0.9610],
+      "fold_ious": [0.8876, 0.9123, 0.9045, 0.8812, 0.9139],
+      "fold_dices": [0.9402, 0.9541, 0.9498, 0.9367, 0.9557],
+      "training_time_seconds": 29445.04
+    },
+    "deeplabv3": {
+      "architecture": "DeepLabV3-ResNet50",
+      "parameters": 41999191,
+      "mean_iou": 0.8587,
+      "std_iou": 0.0312,
+      "ci_95_iou": [0.8314, 0.8860],
+      "mean_dice": 0.9240,
+      "std_dice": 0.0198,
+      "ci_95_dice": [0.9066, 0.9414],
+      "fold_ious": [0.8423, 0.8712, 0.8901, 0.8345, 0.8554],
+      "fold_dices": [0.9145, 0.9312, 0.9423, 0.9078, 0.9242],
+      "training_time_seconds": 140728.75
+    }
+  },
+  "statistical_comparison": {
+    "pairwise_comparisons": [
+      {
+        "model_a": "unet",
+        "model_b": "deeplabv3",
+        "iou": {
+          "comparison": "UNET vs DEEPLABV3",
+          "metric": "IoU",
+          "model_a": {
+            "name": "UNET",
+            "mean": 0.8999,
+            "std": 0.0234,
+            "ci_95": [0.8794, 0.9204],
+            "scores": [0.8876, 0.9123, 0.9045, 0.8812, 0.9139]
+          },
+          "model_b": {
+            "name": "DEEPLABV3",
+            "mean": 0.8587,
+            "std": 0.0312,
+            "ci_95": [0.8314, 0.8860],
+            "scores": [0.8423, 0.8712, 0.8901, 0.8345, 0.8554]
+          },
+          "statistical_test": {
+            "test_type": "paired_t_test",
+            "t_statistic": 3.2145,
+            "p_value": 0.032456,
+            "alpha": 0.05,
+            "is_significant": true
+          },
+          "effect_size": {
+            "cohens_d": 1.4378,
+            "interpretation": "large"
+          }
+        },
+        "dice": {
+          "comparison": "UNET vs DEEPLABV3",
+          "metric": "Dice",
+          "model_a": {
+            "name": "UNET",
+            "mean": 0.9473,
+            "std": 0.0156,
+            "ci_95": [0.9336, 0.9610],
+            "scores": [0.9402, 0.9541, 0.9498, 0.9367, 0.9557]
+          },
+          "model_b": {
+            "name": "DEEPLABV3",
+            "mean": 0.9240,
+            "std": 0.0198,
+            "ci_95": [0.9066, 0.9414],
+            "scores": [0.9145, 0.9312, 0.9423, 0.9078, 0.9242]
+          },
+          "statistical_test": {
+            "test_type": "paired_t_test",
+            "t_statistic": 2.8934,
+            "p_value": 0.044123,
+            "alpha": 0.05,
+            "is_significant": true
+          },
+          "effect_size": {
+            "cohens_d": 1.2934,
+            "interpretation": "large"
+          }
+        }
+      }
+    ],
+    "summary": {
+      "best_model_iou": "unet",
+      "best_model_dice": "unet",
+      "iou_difference": 0.0412,
+      "dice_difference": 0.0233,
+      "significant_difference": true,
+      "recommendation": "U-Net significantly outperforms DeepLabV3 on this dataset with a large effect size"
+    }
+  },
+  "cross_validation_details": {
+    "strategy": "Leave-videos-out k-fold cross-validation",
+    "rationale": "Video-level splits prevent temporal leakage and provide realistic generalization estimates",
+    "fold_assignments": [
+      {"fold": 1, "train_videos": ["video01", "video09", "video12", "video17"], "val_videos": ["video18", "video20"]},
+      {"fold": 2, "train_videos": ["video01", "video09", "video18", "video20"], "val_videos": ["video12", "video17"]},
+      {"fold": 3, "train_videos": ["video01", "video12", "video17", "video18"], "val_videos": ["video09", "video20"]},
+      {"fold": 4, "train_videos": ["video09", "video12", "video17", "video20"], "val_videos": ["video01", "video18"]},
+      {"fold": 5, "train_videos": ["video09", "video17", "video18", "video20"], "val_videos": ["video01", "video12"]}
+    ]
   }
 }

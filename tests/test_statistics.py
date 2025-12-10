@@ -1,10 +1,16 @@
 """Tests for statistical significance testing functions."""
 
+import json
+
 import numpy as np
 import pytest
 
 from surgical_segmentation.evaluation.statistics import (
+    ComparisonResult,
     bootstrap_ci,
+    compute_cohens_d,
+    interpret_effect_size,
+    paired_comparison,
     paired_ttest,
     print_significance_report,
 )
@@ -165,6 +171,299 @@ class TestBootstrapCI:
         assert lower == pytest.approx(0.85)
         assert upper == pytest.approx(0.85)
 
+    def test_random_state_reproducibility(self):
+        """Verify random_state produces reproducible results."""
+        scores = [0.8, 0.82, 0.85, 0.83, 0.81]
+
+        mean1, lower1, upper1 = bootstrap_ci(scores, random_state=42)
+        mean2, lower2, upper2 = bootstrap_ci(scores, random_state=42)
+
+        assert mean1 == mean2
+        assert lower1 == lower2
+        assert upper1 == upper2
+
+
+class TestComputeCohensD:
+    """Test Cohen's d effect size computation."""
+
+    def test_identical_scores_zero_effect(self):
+        """Verify identical scores produce zero effect size."""
+        scores_a = [0.8, 0.8, 0.8, 0.8, 0.8]
+        scores_b = [0.8, 0.8, 0.8, 0.8, 0.8]
+
+        d = compute_cohens_d(scores_a, scores_b)
+
+        assert d == 0.0
+
+    def test_large_difference_large_effect(self):
+        """Verify large differences produce large effect sizes."""
+        # Use scores with variance in differences to get meaningful Cohen's d
+        scores_a = [0.90, 0.92, 0.88, 0.91, 0.89]
+        scores_b = [0.50, 0.48, 0.52, 0.49, 0.51]
+
+        d = compute_cohens_d(scores_a, scores_b)
+
+        assert abs(d) > 0.8  # Large effect
+
+    def test_positive_when_a_greater(self):
+        """Verify positive Cohen's d when scores_a > scores_b."""
+        scores_a = [0.9, 0.92, 0.91, 0.93, 0.89]
+        scores_b = [0.7, 0.72, 0.71, 0.73, 0.69]
+
+        d = compute_cohens_d(scores_a, scores_b)
+
+        assert d > 0
+
+    def test_negative_when_b_greater(self):
+        """Verify negative Cohen's d when scores_b > scores_a."""
+        scores_a = [0.7, 0.72, 0.71, 0.73, 0.69]
+        scores_b = [0.9, 0.92, 0.91, 0.93, 0.89]
+
+        d = compute_cohens_d(scores_a, scores_b)
+
+        assert d < 0
+
+    def test_unequal_length_raises_error(self):
+        """Verify unequal score lists raise ValueError."""
+        scores_a = [0.8, 0.85, 0.9]
+        scores_b = [0.75, 0.8]
+
+        with pytest.raises(ValueError, match="equal length"):
+            compute_cohens_d(scores_a, scores_b)
+
+    def test_returns_float(self):
+        """Verify return type is Python float."""
+        scores_a = [0.8, 0.85, 0.9]
+        scores_b = [0.75, 0.8, 0.85]
+
+        d = compute_cohens_d(scores_a, scores_b)
+
+        assert isinstance(d, float)
+
+
+class TestInterpretEffectSize:
+    """Test effect size interpretation function."""
+
+    def test_negligible_effect(self):
+        """Verify negligible effect interpretation."""
+        assert interpret_effect_size(0.1) == "negligible"
+        assert interpret_effect_size(-0.1) == "negligible"
+        assert interpret_effect_size(0.19) == "negligible"
+
+    def test_small_effect(self):
+        """Verify small effect interpretation."""
+        assert interpret_effect_size(0.2) == "small"
+        assert interpret_effect_size(-0.3) == "small"
+        assert interpret_effect_size(0.49) == "small"
+
+    def test_medium_effect(self):
+        """Verify medium effect interpretation."""
+        assert interpret_effect_size(0.5) == "medium"
+        assert interpret_effect_size(-0.6) == "medium"
+        assert interpret_effect_size(0.79) == "medium"
+
+    def test_large_effect(self):
+        """Verify large effect interpretation."""
+        assert interpret_effect_size(0.8) == "large"
+        assert interpret_effect_size(-1.0) == "large"
+        assert interpret_effect_size(2.5) == "large"
+
+    def test_zero_effect(self):
+        """Verify zero effect is negligible."""
+        assert interpret_effect_size(0.0) == "negligible"
+
+
+class TestComparisonResult:
+    """Test ComparisonResult dataclass."""
+
+    def test_to_dict_structure(self):
+        """Verify to_dict returns expected structure."""
+        result = ComparisonResult(
+            model_a_name="DeepLabV3",
+            model_b_name="U-Net",
+            metric_name="IoU",
+            model_a_mean=0.87,
+            model_a_std=0.02,
+            model_a_scores=[0.85, 0.87, 0.89],
+            model_b_mean=0.78,
+            model_b_std=0.03,
+            model_b_scores=[0.75, 0.78, 0.81],
+            t_statistic=3.5,
+            p_value=0.01,
+            effect_size=1.2,
+            is_significant=True,
+            alpha=0.05,
+            ci_a=(0.85, 0.89),
+            ci_b=(0.75, 0.81),
+        )
+
+        d = result.to_dict()
+
+        assert d["comparison"] == "DeepLabV3 vs U-Net"
+        assert d["metric"] == "IoU"
+        assert d["model_a"]["name"] == "DeepLabV3"
+        assert d["model_a"]["mean"] == 0.87
+        assert d["model_b"]["name"] == "U-Net"
+        assert d["statistical_test"]["test_type"] == "paired_t_test"
+        assert d["statistical_test"]["is_significant"] is True
+        assert d["effect_size"]["cohens_d"] == 1.2
+        assert d["effect_size"]["interpretation"] == "large"
+
+    def test_to_dict_json_serializable(self):
+        """Verify to_dict output is JSON serializable."""
+        result = ComparisonResult(
+            model_a_name="ModelA",
+            model_b_name="ModelB",
+            metric_name="Dice",
+            model_a_mean=0.9,
+            model_a_std=0.01,
+            model_a_scores=[0.89, 0.90, 0.91],
+            model_b_mean=0.85,
+            model_b_std=0.02,
+            model_b_scores=[0.83, 0.85, 0.87],
+            t_statistic=2.5,
+            p_value=0.03,
+            effect_size=0.7,
+            is_significant=True,
+            ci_a=(0.88, 0.92),
+            ci_b=(0.82, 0.88),
+        )
+
+        # Should not raise
+        json_str = json.dumps(result.to_dict())
+        assert isinstance(json_str, str)
+
+        # Should roundtrip
+        loaded = json.loads(json_str)
+        assert loaded["metric"] == "Dice"
+
+    def test_summary_contains_key_info(self):
+        """Verify summary contains key information."""
+        result = ComparisonResult(
+            model_a_name="DeepLabV3",
+            model_b_name="U-Net",
+            metric_name="IoU",
+            model_a_mean=0.87,
+            model_a_std=0.02,
+            model_b_mean=0.78,
+            model_b_std=0.03,
+            t_statistic=3.5,
+            p_value=0.01,
+            effect_size=1.2,
+            is_significant=True,
+            ci_a=(0.85, 0.89),
+            ci_b=(0.75, 0.81),
+        )
+
+        summary = result.summary()
+
+        assert "DeepLabV3" in summary
+        assert "U-Net" in summary
+        assert "IoU" in summary
+        assert "0.87" in summary
+        assert "0.78" in summary
+        assert "statistically significant" in summary
+        assert "DeepLabV3 performs better" in summary
+
+    def test_summary_no_winner_when_not_significant(self):
+        """Verify summary shows no winner when not significant."""
+        result = ComparisonResult(
+            model_a_name="ModelA",
+            model_b_name="ModelB",
+            metric_name="IoU",
+            model_a_mean=0.80,
+            model_a_std=0.05,
+            model_b_mean=0.79,
+            model_b_std=0.05,
+            t_statistic=0.5,
+            p_value=0.6,
+            effect_size=0.1,
+            is_significant=False,
+            ci_a=(0.75, 0.85),
+            ci_b=(0.74, 0.84),
+        )
+
+        summary = result.summary()
+
+        assert "not statistically significant" in summary
+        assert "No conclusive winner" in summary
+
+
+class TestPairedComparison:
+    """Test paired_comparison comprehensive function."""
+
+    def test_returns_comparison_result(self):
+        """Verify function returns ComparisonResult."""
+        scores_a = [0.85, 0.87, 0.89, 0.86, 0.88]
+        scores_b = [0.75, 0.78, 0.80, 0.76, 0.79]
+
+        result = paired_comparison(scores_a, scores_b, model_a_name="ModelA", model_b_name="ModelB")
+
+        assert isinstance(result, ComparisonResult)
+
+    def test_computes_all_statistics(self):
+        """Verify all statistics are computed."""
+        scores_a = [0.85, 0.87, 0.89, 0.86, 0.88]
+        scores_b = [0.75, 0.78, 0.80, 0.76, 0.79]
+
+        result = paired_comparison(scores_a, scores_b)
+
+        # Check means
+        assert result.model_a_mean == pytest.approx(np.mean(scores_a), rel=1e-4)
+        assert result.model_b_mean == pytest.approx(np.mean(scores_b), rel=1e-4)
+
+        # Check stds
+        assert result.model_a_std == pytest.approx(np.std(scores_a, ddof=1), rel=1e-4)
+        assert result.model_b_std == pytest.approx(np.std(scores_b, ddof=1), rel=1e-4)
+
+        # Check CIs are reasonable
+        assert result.ci_a[0] < result.model_a_mean < result.ci_a[1]
+        assert result.ci_b[0] < result.model_b_mean < result.ci_b[1]
+
+        # Check significance computed
+        assert isinstance(result.is_significant, bool)
+        assert isinstance(result.p_value, float)
+        assert isinstance(result.t_statistic, float)
+        assert isinstance(result.effect_size, float)
+
+    def test_stores_raw_scores(self):
+        """Verify raw scores are stored."""
+        scores_a = [0.85, 0.87, 0.89]
+        scores_b = [0.75, 0.78, 0.80]
+
+        result = paired_comparison(scores_a, scores_b)
+
+        assert result.model_a_scores == scores_a
+        assert result.model_b_scores == scores_b
+
+    def test_unequal_length_raises_error(self):
+        """Verify unequal score lists raise ValueError."""
+        scores_a = [0.85, 0.87, 0.89]
+        scores_b = [0.75, 0.78]
+
+        with pytest.raises(ValueError, match="same length"):
+            paired_comparison(scores_a, scores_b)
+
+    def test_custom_names_preserved(self):
+        """Verify custom model names are preserved."""
+        result = paired_comparison(
+            [0.85, 0.87, 0.89],
+            [0.75, 0.78, 0.80],
+            model_a_name="DeepLabV3-ResNet50",
+            model_b_name="U-Net",
+            metric_name="Dice Score",
+        )
+
+        assert result.model_a_name == "DeepLabV3-ResNet50"
+        assert result.model_b_name == "U-Net"
+        assert result.metric_name == "Dice Score"
+
+    def test_custom_alpha_level(self):
+        """Verify custom alpha level is used."""
+        result = paired_comparison([0.85, 0.87, 0.89], [0.75, 0.78, 0.80], alpha=0.01)
+
+        assert result.alpha == 0.01
+
 
 class TestPrintSignificanceReport:
     """Test significance report printing."""
@@ -210,6 +509,26 @@ class TestPrintSignificanceReport:
 
         captured = capsys.readouterr()
         assert "95% CI" in captured.out
+
+    def test_outputs_effect_size(self, capsys):
+        """Verify Cohen's d effect size appears in output."""
+        scores_a = [0.8, 0.82, 0.85]
+        scores_b = [0.75, 0.78, 0.80]
+
+        print_significance_report("UNet", "DeepLabV3", scores_a, scores_b)
+
+        captured = capsys.readouterr()
+        assert "Cohen's d" in captured.out
+
+    def test_outputs_std_dev(self, capsys):
+        """Verify standard deviation appears in output."""
+        scores_a = [0.8, 0.82, 0.85]
+        scores_b = [0.75, 0.78, 0.80]
+
+        print_significance_report("UNet", "DeepLabV3", scores_a, scores_b)
+
+        captured = capsys.readouterr()
+        assert "Std Dev" in captured.out
 
     def test_identifies_better_model_when_significant(self, capsys):
         """Verify better model is identified when significant."""

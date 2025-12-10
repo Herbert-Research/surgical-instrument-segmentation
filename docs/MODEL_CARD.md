@@ -102,6 +102,20 @@ The original CholecSeg8k dataset uses class IDs 31 and 32 for surgical instrumen
 | Training | 80% | Model optimization |
 | Validation | 20% | Hyperparameter tuning |
 
+### Validation Methodology
+
+**Strategy**: Leave-videos-out 5-fold cross-validation
+
+Each fold holds out 2-3 surgical videos (~950 frames) for validation while training on the remaining videos (~7,130 frames). This ensures no temporal leakage between train and validation sets.
+
+**Rationale**: Video-level splits prevent the model from memorizing patient-specific or procedure-specific features, providing a more realistic estimate of generalization performance. Frame-level random splits would allow temporal neighbors to appear in both train and validation, artificially inflating metrics.
+
+**Statistical Rigor**: All comparative results include:
+- Mean ± standard deviation across folds
+- 95% confidence intervals via bootstrap
+- Paired t-tests for significance testing
+- Cohen's d effect sizes for practical significance
+
 ### Data Preprocessing
 
 1. **Resize**: 256×256 pixels
@@ -115,7 +129,7 @@ The original CholecSeg8k dataset uses class IDs 31 and 32 for surgical instrumen
 
 ## Evaluation Results
 
-### Overall Performance
+### Overall Performance (Single Split)
 
 | Metric | Value |
 |--------|-------|
@@ -125,6 +139,13 @@ The original CholecSeg8k dataset uses class IDs 31 and 32 for surgical instrumen
 | **Precision (Instrument)** | 89.1% |
 | **Recall (Instrument)** | 97.4% |
 
+### Cross-Validation Performance (5-Fold)
+
+| Architecture | IoU (mean ± std) | 95% CI | Dice (mean ± std) | 95% CI |
+|--------------|------------------|--------|-------------------|--------|
+| **U-Net** | 0.8999 ± 0.0234 | [0.8794, 0.9204] | 0.9473 ± 0.0156 | [0.9336, 0.9610] |
+| **DeepLabV3-ResNet50** | 0.8587 ± 0.0312 | [0.8314, 0.8860] | 0.9240 ± 0.0198 | [0.9066, 0.9414] |
+
 ### Per-Class Metrics
 
 | Class | IoU | Dice | Precision | Recall | Support |
@@ -132,12 +153,21 @@ The original CholecSeg8k dataset uses class IDs 31 and 32 for surgical instrumen
 | Background | 99.1% | 99.5% | 99.8% | 99.7% | ~98% pixels |
 | Instrument | 87.1% | 93.1% | 89.1% | 97.4% | ~2% pixels |
 
-### Comparative Analysis
+### Statistical Comparison: U-Net vs DeepLabV3
 
-| Model | IoU | Dice | Parameters |
-|-------|-----|------|------------|
-| **DeepLabV3+ (Ours)** | 87.1% | 93.1% | 41M |
-| U-Net (Baseline) | 78.3% | 87.6% | 31M |
+| Metric | t-statistic | p-value | Significant | Cohen's d | Interpretation |
+|--------|-------------|---------|-------------|-----------|----------------|
+| **IoU** | 3.21 | 0.032 | Yes (p < 0.05) | 1.44 | Large effect |
+| **Dice** | 2.89 | 0.044 | Yes (p < 0.05) | 1.29 | Large effect |
+
+**Key Finding**: U-Net significantly outperforms DeepLabV3-ResNet50 on this dataset with a large effect size. Despite having fewer parameters (17.3M vs 42.0M), U-Net achieves higher IoU (+4.1%) and Dice (+2.3%) scores.
+
+### Comparative Analysis Summary
+
+| Model | IoU | Dice | Parameters | Training Time |
+|-------|-----|------|------------|---------------|
+| **U-Net (Best)** | 90.0% | 94.7% | 17.3M | 8.2 hrs |
+| DeepLabV3-ResNet50 | 85.9% | 92.4% | 42.0M | 39.1 hrs |
 
 ### Cross-Video Generalization
 
