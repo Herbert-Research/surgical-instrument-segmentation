@@ -468,6 +468,15 @@ def train_model(
                 frames = frames.to(device)
                 masks = masks.to(device)
 
+                # Fail loudly if an entire batch contains no instrument pixels.
+                # This guards against label mismatches in synthetic or real data.
+                instrument_pixels = (masks > 0).sum().item()
+                if instrument_pixels == 0:
+                    raise ValueError(
+                        "Instrument mask is empty for an entire batch. "
+                        "Check label remapping and synthetic mask generation."
+                    )
+
                 outputs = model(frames)
                 loss = criterion(outputs, masks)
 

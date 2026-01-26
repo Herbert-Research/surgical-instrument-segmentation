@@ -67,11 +67,25 @@ class TestMaskRemapping:
     def test_remapped_mask_is_binary(self, sample_cholecseg_mask):
         """Verify remapped mask only contains values 0 and 1."""
         remapped = np.zeros_like(sample_cholecseg_mask, dtype=np.uint8)
-        instrument_mask = (sample_cholecseg_mask == 31) | (sample_cholecseg_mask == 32)
+        instrument_mask = (
+            (sample_cholecseg_mask == 1)
+            | (sample_cholecseg_mask == 31)
+            | (sample_cholecseg_mask == 32)
+        )
         remapped[instrument_mask] = 1
 
         unique_values = np.unique(remapped)
         assert set(unique_values).issubset({0, 1}), f"Expected only 0 and 1, got {unique_values}"
+
+    def test_remap_class_1_to_instrument(self, sample_cholecseg_mask):
+        """Verify synthetic class 1 is remapped to 1."""
+        mask = np.zeros_like(sample_cholecseg_mask, dtype=np.uint8)
+        mask[10, 10] = 1
+        remapped = np.zeros_like(mask, dtype=np.uint8)
+        instrument_mask = (mask == 1) | (mask == 31) | (mask == 32)
+        remapped[instrument_mask] = 1
+
+        assert remapped[10, 10] == 1, "Class 1 should map to 1"
 
 
 class TestSurgicalDataset:
@@ -202,6 +216,25 @@ class TestSurgicalDataset:
 
         expected_order = [f"frame_{i:05d}.png" for i in range(5)]
         assert dataset.frames == expected_order
+
+    def test_synthetic_data_has_instruments(self, tmp_path):
+        """Verify synthetic-style masks (label 1) produce non-empty instrument masks."""
+        frame_dir = tmp_path / "frames"
+        mask_dir = tmp_path / "masks"
+        frame_dir.mkdir()
+        mask_dir.mkdir()
+
+        frame = np.random.randint(0, 255, (256, 256, 3), dtype=np.uint8)
+        mask = np.zeros((256, 256), dtype=np.uint8)
+        mask[40:80, 60:120] = 1  # Synthetic instrument label
+
+        Image.fromarray(frame).save(frame_dir / "frame_00000.png")
+        Image.fromarray(mask).save(mask_dir / "mask_00000.png")
+
+        dataset = SurgicalDataset(str(frame_dir), str(mask_dir))
+        _, mask_tensor = dataset[0]
+
+        assert mask_tensor.sum() > 0, "Mask is empty — label mismatch still exists"
 
 
 class TestDatasetAugmentation:
