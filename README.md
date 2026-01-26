@@ -230,10 +230,12 @@ To provide robust generalization estimates, we performed 5-fold cross-validation
 
 - **Model weights:** `outputs/models/instrument_segmentation_model.pth` achieves IoU 87.1% / Dice 93.1% on the validation set.
 - **training_loss.png:** Convergence trace across epochs (saved to `outputs/figures/`).
-- **segmentation_results.png**, **impressive_segmentation_results.png**, **best_segmentation_results.png**, **challenging_segmentation_results.png:** Representative qualitative results in `outputs/figures/` for publications and committee review.
+- **segmentation_results.png**, **demo_best_cases.png**, **random_sample_segmentation_results.png**, **best_segmentation_results.png**, **challenging_segmentation_results.png:** Representative qualitative results in `outputs/figures/` for publications and committee review.
 - **comprehensive_analysis.png**, **full_dataset_analysis.png**, **full_dataset_complete_analysis.png:** Dashboard visuals summarizing performance at dataset scale (all under `outputs/figures/`).
 - **video01_* / video80_* figures:** Out-of-distribution vs aligned-domain studies illustrating domain shift impacts (stored in `outputs/figures/`).
 - **test_mask_thresh03.png**, **test_mask_thresh05.png:** Threshold sensitivity analyses supporting the semi-supervised adaptation plan (in `outputs/figures/`).
+
+**Visualization provenance note:** `demo_best_cases.png` is curated from high-instrument frames for demonstrations. Use `random_sample_segmentation_results.png` (generated via `scripts/visualize_random_sample.py` with a recorded seed) for representative qualitative reporting.
 
 ## Current Limitations and Future Work
 
@@ -341,6 +343,23 @@ python scripts/analyze_generated_masks.py \
 
 python scripts/analyze_mask_statistics.py \
   --generated-dir data/new_video_output
+```
+
+### 5. Curated vs Random Visualizations
+
+```bash
+# Curated demo (best-case frames)
+python scripts/demo_best_cases.py \
+  --frame-dir "datasets/Full Dataset/frames" \
+  --mask-dir "datasets/Full Dataset/masks" \
+  --output outputs/figures/demo_best_cases.png
+
+# Random sample (representative) with recorded seed
+python scripts/visualize_random_sample.py \
+  --frame-dir "datasets/Full Dataset/frames" \
+  --mask-dir "datasets/Full Dataset/masks" \
+  --output outputs/figures/random_sample_segmentation_results.png \
+  --seed 1337
 ```
 
 ## Software Requirements
