@@ -1,0 +1,284 @@
+/GitHub/surgical-instrument-segmentation/.venv/Scripts/python.exe -m pytest tests/ -v        =================================== test session starts ====================================
+platform win32 -- Python 3.9.13, pytest-8.4.2, pluggy-1.6.0 -- C:\Users\m4rti\Documents\GitHub\surgical-instrument-segmentation\.venv\Scripts\python.exe                                  cachedir: .pytest_cache
+rootdir: C:\Users\m4rti\Documents\GitHub\surgical-instrument-segmentation
+configfile: pyproject.toml
+plugins: cov-7.0.0
+collected 313 items
+
+tests/test_analyzer.py::TestBinaryConfusionMatrix::test_perfect_prediction PASSED     [  0%]
+tests/test_analyzer.py::TestBinaryConfusionMatrix::test_all_errors PASSED             [  0%]
+tests/test_analyzer.py::TestBinaryConfusionMatrix::test_mixed_predictions PASSED      [  0%]
+tests/test_analyzer.py::TestBinaryConfusionMatrix::test_matrix_sums_to_total PASSED   [  1%]
+tests/test_analyzer.py::TestPrecisionRecallCurve::test_curve_has_correct_length PASSED [  1%]
+tests/test_analyzer.py::TestPrecisionRecallCurve::test_perfect_predictions_yield_perfect_curve PASSED [  1%]                                                                              tests/test_analyzer.py::TestPrecisionRecallCurve::test_values_in_valid_range PASSED   [  2%]
+tests/test_analyzer.py::TestResolveClassNames::test_default_names_for_binary PASSED   [  2%]
+tests/test_analyzer.py::TestResolveClassNames::test_override_names PASSED             [  2%]
+tests/test_analyzer.py::TestResolveClassNames::test_names_padded_for_more_classes PASSED [  3
+%]                                                                                           tests/test_analyzer.py::TestResolveClassNames::test_names_truncated_for_fewer_classes PASSED
+[  3%]
+tests/test_analyzer.py::TestLoadMaskPredictionPairs::test_loads_matching_files PASSED [  3%]
+tests/test_analyzer.py::TestLoadMaskPredictionPairs::test_respects_max_samples PASSED [  4%]
+tests/test_analyzer.py::TestLoadMaskPredictionPairs::test_raises_on_missing_gt_dir PASSED [
+4%]
+tests/test_analyzer.py::TestLoadMaskPredictionPairs::test_raises_on_missing_pred_dir PASSED [
+  4%]                                                                                        tests/test_analyzer.py::TestLoadMaskPredictionPairs::test_raises_on_no_matching_files PASSED
+[  5%]
+tests/test_analyzer.py::TestConfusionMatrixMulticlass::test_binary_case_matches_binary_function PASSED [  5%]                                                                             tests/test_analyzer.py::TestConfusionMatrixMulticlass::test_three_class_case PASSED   [  5%]
+tests/test_analyzer.py::TestConfusionMatrixMulticlass::test_ignores_invalid_values PASSED [
+6%]
+tests/test_analyzer.py::TestComputeMulticlassMetrics::test_perfect_prediction_all_ones PASSED
+ [  6%]                                                                                      tests/test_analyzer.py::TestComputeMulticlassMetrics::test_precision_calculation PASSED [  6%
+]                                                                                            tests/test_analyzer.py::TestComputeMulticlassMetrics::test_recall_calculation PASSED  [  7%]
+tests/test_analyzer.py::TestComputeMulticlassMetrics::test_iou_matches_formula PASSED [  7%]
+tests/test_analyzer.py::TestComputeMulticlassMetrics::test_dice_matches_formula PASSED [  7%]
+tests/test_analyzer.py::TestColorizeMask::test_output_shape PASSED                    [  7%] tests/test_analyzer.py::TestColorizeMask::test_output_dtype PASSED                    [  8%]
+tests/test_analyzer.py::TestColorizeMask::test_different_classes_get_different_colors PASSED
+[  8%]
+tests/test_analyzer.py::TestBuildPreviewImage::test_output_concatenates_masks PASSED  [  8%]
+tests/test_analyzer.py::TestBuildPreviewImage::test_handles_mismatched_sizes PASSED   [  9%]
+tests/test_analyzer.py::TestBuildPreviewImage::test_output_is_rgb PASSED              [  9%]
+tests/test_analyzer.py::TestDefaultClassNames::test_default_names_exist PASSED        [  9%]
+tests/test_analyzer.py::TestDefaultClassNames::test_default_includes_background PASSED [ 10%]
+tests/test_analyzer.py::TestLoadMaskPredictionPairsExtra::test_handles_mismatched_sizes PASSED [ 10%]                                                                                     tests/test_analyzer.py::TestAnalyzeModelPerformance::test_dispatches_to_synthetic PASSED [ 10
+%]                                                                                           tests/test_analyzer.py::TestAnalyzeModelPerformance::test_dispatches_to_dataset PASSED [ 11%]
+tests/test_analyzer.py::TestLoadMaskPredictionPairsValidation::test_raises_on_none_dirs PASSED [ 11%]                                                                                     tests/test_analyzer.py::TestParseArgs::test_default_mode_is_synthetic PASSED          [ 11%]
+tests/test_analyzer.py::TestParseArgs::test_dataset_mode_parsing PASSED               [ 12%]
+tests/test_analyzer.py::TestParseArgs::test_custom_directories PASSED                 [ 12%]
+tests/test_analyzer.py::TestParseArgs::test_samples_argument PASSED                   [ 12%]
+tests/test_analyzer.py::TestParseArgs::test_num_classes_argument PASSED               [ 13%]
+tests/test_analyzer.py::TestParseArgs::test_class_names_argument PASSED               [ 13%]
+tests/test_analyzer.py::TestParseArgs::test_output_argument PASSED                    [ 13%]
+tests/test_analyzer.py::TestRunSyntheticAnalysis::test_generates_figure PASSED        [ 14%]
+tests/test_analyzer.py::TestRunSyntheticAnalysis::test_prints_metrics PASSED          [ 14%]
+tests/test_analyzer.py::TestRunDatasetAnalysis::test_with_valid_data PASSED           [ 14%]
+tests/test_analyzer.py::TestRunDatasetAnalysis::test_with_cholec_class_ids PASSED     [ 15%]
+tests/test_analyzer.py::TestRunDatasetAnalysis::test_prints_summary PASSED            [ 15%]
+tests/test_analyzer.py::TestRunDatasetAnalysis::test_with_no_overlapping_files_raises PASSED
+[ 15%]
+tests/test_analyzer.py::TestMainFunction::test_main_calls_analyze PASSED              [ 15%]
+tests/test_analyzer.py::TestMainFunction::test_main_creates_output_directory PASSED   [ 16%]
+tests/test_analyzer.py::TestMainFunction::test_main_prints_header PASSED              [ 16%]
+tests/test_config.py::TestClassWeightsConfig::test_default_values PASSED              [ 16%]
+tests/test_config.py::TestClassWeightsConfig::test_to_list_binary PASSED              [ 17%]
+tests/test_config.py::TestClassWeightsConfig::test_to_list_multiclass PASSED          [ 17%]
+tests/test_config.py::TestTrainingConfig::test_default_values PASSED                  [ 17%]
+tests/test_config.py::TestTrainingConfig::test_custom_values PASSED                   [ 18%]
+tests/test_config.py::TestModelConfig::test_default_architecture PASSED               [ 18%]
+tests/test_config.py::TestModelConfig::test_default_num_classes PASSED                [ 18%]
+tests/test_config.py::TestDataConfig::test_default_image_size PASSED                  [ 19%]
+tests/test_config.py::TestDataConfig::test_default_normalization PASSED               [ 19%]
+tests/test_config.py::TestAugmentationConfig::test_horizontal_flip_probability PASSED [ 19%]
+tests/test_config.py::TestAugmentationConfig::test_augmentation_parameters PASSED     [ 20%]
+tests/test_config.py::TestAugmentationConfig::test_color_jitter_defaults PASSED       [ 20%]
+tests/test_config.py::TestColorJitterConfig::test_default_values PASSED               [ 20%]
+tests/test_config.py::TestColorJitterConfig::test_custom_values PASSED                [ 21%]
+tests/test_config.py::TestNormalizeConfig::test_imagenet_defaults PASSED              [ 21%]
+tests/test_config.py::TestHardwareConfig::test_default_uses_gpu_if_available PASSED   [ 21%]
+tests/test_config.py::TestHardwareConfig::test_get_device_with_force_cpu PASSED       [ 22%]
+tests/test_config.py::TestHardwareConfig::test_get_device_with_specific_cuda PASSED   [ 22%]
+tests/test_config.py::TestConfig::test_default_initialization PASSED                  [ 22%]
+tests/test_config.py::TestConfig::test_nested_config_access PASSED                    [ 23%]
+tests/test_config.py::TestLoadConfig::test_load_from_yaml_file PASSED                 [ 23%]
+tests/test_config.py::TestLoadConfig::test_load_nonexistent_file_returns_defaults PASSED [ 23
+%]                                                                                           tests/test_config.py::TestLoadConfig::test_load_default_config PASSED                 [ 23%]
+tests/test_config.py::TestSaveConfig::test_save_creates_yaml_file PASSED              [ 24%]
+tests/test_config.py::TestSaveConfig::test_round_trip_preserves_values PASSED         [ 24%]
+tests/test_config.py::TestGetConfig::test_returns_config_instance PASSED              [ 24%]
+tests/test_config.py::TestGetConfig::test_returns_same_instance PASSED                [ 25%]
+tests/test_config.py::TestExperimentConfig::test_default_name PASSED                  [ 25%]
+tests/test_config.py::TestExperimentConfig::test_default_tags PASSED                  [ 25%]
+tests/test_config.py::TestPathsConfig::test_default_output_dir PASSED                 [ 26%]
+tests/test_config.py::TestPathsConfig::test_model_path_property PASSED                [ 26%]
+tests/test_config.py::TestPathsConfig::test_ensure_dirs_exist_creates_directories PASSED [ 26
+%]                                                                                           tests/test_config.py::TestEvaluationConfig::test_default_metrics PASSED               [ 27%]
+tests/test_config.py::TestLoggingConfig::test_default_log_level PASSED                [ 27%]
+tests/test_config.py::TestDictToDataclass::test_non_dataclass_returns_data PASSED     [ 27%]
+tests/test_config.py::TestDictToDataclass::test_dataclass_conversion PASSED           [ 28%]
+tests/test_config.py::TestDictToDataclass::test_nested_dataclass PASSED               [ 28%]
+tests/test_config.py::TestLoadConfigWithOverrides::test_nested_key_override PASSED    [ 28%]
+tests/test_config.py::TestLoadConfigWithOverrides::test_override_preserves_other_values PASSED [ 29%]                                                                                     tests/test_config.py::TestHardwareConfigCUDA::test_get_device_returns_cuda_when_available PASSED [ 29%]                                                                                   tests/test_config.py::TestHardwareConfigCUDA::test_get_device_returns_cuda_with_custom_device PASSED [ 29%]                                                                               tests/test_config.py::TestHardwareConfigCUDA::test_get_device_returns_cpu_when_cuda_unavailable PASSED [ 30%]                                                                             tests/test_config.py::TestHardwareConfigCUDA::test_get_device_returns_cpu_when_force_cpu_true PASSED [ 30%]                                                                               tests/test_config.py::TestHardwareConfigCUDA::test_get_device_default_cuda_device PASSED [ 30
+%]                                                                                           tests/test_cross_validation.py::TestFoldResult::test_creates_valid_fold_result PASSED [ 30%]
+tests/test_cross_validation.py::TestFoldResult::test_stores_train_videos_list PASSED  [ 31%]
+tests/test_cross_validation.py::TestCrossValidationResult::test_empty_result_has_zero_metrics PASSED [ 31%]                                                                               tests/test_cross_validation.py::TestCrossValidationResult::test_mean_iou_calculation PASSED [ 31%]                                                                                        tests/test_cross_validation.py::TestCrossValidationResult::test_std_iou_calculation PASSED [ 32%]
+tests/test_cross_validation.py::TestCrossValidationResult::test_mean_dice_calculation PASSED [ 32%]
+tests/test_cross_validation.py::TestCrossValidationResult::test_to_dict_structure PASSED [ 32
+%]                                                                                           tests/test_cross_validation.py::TestCrossValidationResult::test_save_creates_valid_json PASSED [ 33%]                                                                                     tests/test_cross_validation.py::TestGetVideoGroups::test_groups_frames_by_video PASSED [ 33%]
+tests/test_cross_validation.py::TestGetVideoGroups::test_raises_on_missing_directory PASSED [ 33%]                                                                                        tests/test_cross_validation.py::TestGetVideoGroups::test_raises_on_empty_directory PASSED [ 34%]                                                                                          tests/test_cross_validation.py::TestGetVideoGroups::test_returns_sorted_filenames PASSED [ 34
+%]                                                                                           tests/test_cross_validation.py::TestBuildTransforms::test_returns_two_transforms PASSED [ 34%]
+                                                                                            tests/test_cross_validation.py::TestBuildTransforms::test_transforms_are_callable PASSED [ 35
+%]                                                                                           tests/test_cross_validation.py::TestBuildTransforms::test_transforms_produce_tensors PASSED [ 35%]                                                                                        tests/test_cross_validation.py::TestBuildTransforms::test_transforms_produce_correct_shape PASSED [ 35%]                                                                                  tests/test_cross_validation.py::TestConstants::test_num_classes_binary PASSED         [ 36%]
+tests/test_cross_validation.py::TestConstants::test_imagenet_mean_valid PASSED        [ 36%]
+tests/test_cross_validation.py::TestConstants::test_imagenet_std_valid PASSED         [ 36%]
+tests/test_cross_validation.py::TestConstants::test_default_seed_is_integer PASSED    [ 37%]
+tests/test_cross_validation.py::TestCrossValidationResultSave::test_save_creates_json_file PASSED [ 37%]                                                                                  tests/test_cross_validation.py::TestCrossValidationResultSave::test_save_empty_result PASSED [ 37%]
+tests/test_cross_validation.py::TestGetVideoGroupsEdgeCases::test_nonexistent_directory_raises PASSED [ 38%]                                                                              tests/test_cross_validation.py::TestGetVideoGroupsEdgeCases::test_empty_directory_raises PASSED [ 38%]                                                                                    tests/test_cross_validation.py::TestGetVideoGroupsEdgeCases::test_groups_frames_correctly PASSED [ 38%]                                                                                   tests/test_cross_validation.py::TestSeedEverythingCrossValidation::test_seed_makes_numpy_deterministic PASSED [ 38%]                                                                      tests/test_cross_validation.py::TestSeedEverythingCrossValidation::test_seed_makes_torch_deterministic PASSED [ 39%]                                                                      tests/test_cross_validation.py::TestBuildModel::test_build_deeplabv3 PASSED           [ 39%]
+tests/test_cross_validation.py::TestBuildModel::test_build_unet PASSED                [ 39%]
+tests/test_cross_validation.py::TestBuildModel::test_invalid_model_class_raises PASSED [ 40%]
+tests/test_cross_validation.py::TestBuildDataloaders::test_returns_two_dataloaders PASSED [ 40%]                                                                                          tests/test_cross_validation.py::TestTrainOneEpoch::test_returns_float_loss PASSED     [ 40%]
+tests/test_cross_validation.py::TestTrainOneEpoch::test_handles_deeplabv3_dict_output PASSED [ 41%]
+tests/test_cross_validation.py::TestEvaluateModelCV::test_returns_metrics_dict PASSED [ 41%]
+tests/test_cross_validation.py::TestEvaluateModelCV::test_with_deeplabv3 PASSED       [ 41%]
+tests/test_cross_validation.py::TestConfusionMatrixMulticlassCV::test_perfect_prediction PASSED [ 42%]                                                                                    tests/test_cross_validation.py::TestComputeMetricsFromCMCV::test_returns_all_metrics PASSED [ 42%]                                                                                        tests/test_datasets.py::TestMaskRemapping::test_remap_class_31_to_instrument PASSED   [ 42%]
+tests/test_datasets.py::TestMaskRemapping::test_remap_class_32_to_instrument PASSED   [ 43%]
+tests/test_datasets.py::TestMaskRemapping::test_background_remains_zero PASSED        [ 43%]
+tests/test_datasets.py::TestMaskRemapping::test_remapped_mask_is_binary PASSED        [ 43%]
+tests/test_datasets.py::TestMaskRemapping::test_remap_class_1_to_instrument PASSED    [ 44%]
+tests/test_datasets.py::TestSurgicalDataset::test_dataset_length_matches_files PASSED [ 44%]
+tests/test_datasets.py::TestSurgicalDataset::test_getitem_returns_tensor_tuple PASSED [ 44%]
+tests/test_datasets.py::TestSurgicalDataset::test_getitem_frame_shape PASSED          [ 45%]
+tests/test_datasets.py::TestSurgicalDataset::test_getitem_mask_shape PASSED           [ 45%]
+tests/test_datasets.py::TestSurgicalDataset::test_getitem_mask_dtype PASSED           [ 45%]
+tests/test_datasets.py::TestSurgicalDataset::test_getitem_mask_values_binary PASSED   [ 46%]
+tests/test_datasets.py::TestSurgicalDataset::test_custom_transform_applied PASSED     [ 46%]
+tests/test_datasets.py::TestSurgicalDataset::test_file_list_filtering PASSED          [ 46%]
+tests/test_datasets.py::TestSurgicalDataset::test_missing_mask_raises_error PASSED    [ 46%]
+tests/test_datasets.py::TestSurgicalDataset::test_frames_sorted_alphabetically PASSED [ 47%]
+tests/test_datasets.py::TestSurgicalDataset::test_synthetic_data_has_instruments PASSED [ 47%
+]                                                                                            tests/test_datasets.py::TestDatasetAugmentation::test_augmentation_produces_valid_output PASSED [ 47%]                                                                                    tests/test_datasets.py::TestDatasetAugmentation::test_augmentation_preserves_mask_values PASSED [ 48%]                                                                                    tests/test_datasets.py::TestDatasetAugmentation::test_horizontal_flip_alignment PASSED [ 48%]
+tests/test_datasets.py::TestDatasetEdgeCases::test_empty_directory_creates_empty_dataset PASSED [ 48%]                                                                                    tests/test_datasets.py::TestDatasetEdgeCases::test_single_sample_dataset PASSED       [ 49%]
+tests/test_datasets.py::TestDatasetEdgeCases::test_grayscale_mask_handling PASSED     [ 49%]
+tests/test_evaluation_integration.py::TestEvaluationMetrics::test_perfect_prediction_iou PASSED [ 49%]                                                                                    tests/test_evaluation_integration.py::TestEvaluationMetrics::test_perfect_prediction_dice PASSED [ 50%]                                                                                   tests/test_evaluation_integration.py::TestEvaluationMetrics::test_partial_overlap_iou PASSED [ 50%]
+tests/test_evaluation_integration.py::TestEvaluationMetrics::test_partial_overlap_dice PASSED [ 50%]                                                                                      tests/test_evaluation_integration.py::TestEvaluationMetrics::test_no_overlap_iou PASSED [ 51%]
+tests/test_evaluation_integration.py::TestEvaluationMetrics::test_iou_dice_mathematical_relationship PASSED [ 51%]                                                                        tests/test_evaluation_integration.py::TestConfusionMatrix::test_perfect_prediction_confusion_matrix PASSED [ 51%]                                                                         tests/test_evaluation_integration.py::TestConfusionMatrix::test_confusion_matrix_with_errors PASSED [ 52%]
+tests/test_evaluation_integration.py::TestModelInference::test_model_produces_valid_predictions PASSED [ 52%]                                                                             tests/test_evaluation_integration.py::TestModelInference::test_model_batch_inference PASSED [ 52%]                                                                                        tests/test_evaluation_integration.py::TestModelInference::test_model_deterministic_in_eval_mode PASSED [ 53%]                                                                             tests/test_evaluation_integration.py::TestPrecisionRecall::test_perfect_precision_recall PASSED [ 53%]                                                                                    tests/test_evaluation_integration.py::TestPrecisionRecall::test_precision_with_false_positives PASSED [ 53%]                                                                              tests/test_evaluation_integration.py::TestPrecisionRecall::test_recall_with_false_negatives PASSED [ 53%]
+tests/test_evaluation_integration.py::TestPrecisionRecall::test_f1_score_calculation PASSED [ 54%]                                                                                        tests/test_evaluation_integration.py::TestEdgeCases::test_empty_prediction_mask PASSED [ 54%]
+tests/test_evaluation_integration.py::TestEdgeCases::test_empty_ground_truth_mask PASSED [ 54%]                                                                                           tests/test_evaluation_integration.py::TestEdgeCases::test_both_masks_empty PASSED     [ 55%]
+tests/test_evaluation_integration.py::TestEdgeCases::test_single_pixel_prediction PASSED [ 55%
+]                                                                                           tests/test_metrics.py::test_iou_known_values PASSED                                   [ 55%]
+tests/test_metrics.py::test_dice_known_values PASSED                                  [ 56%]
+tests/test_metrics.py::test_precision_recall_known_values PASSED                      [ 56%]
+tests/test_metrics.py::test_all_metrics_consistency PASSED                            [ 56%]
+tests/test_metrics.py::test_both_masks_empty PASSED                                   [ 57%]
+tests/test_metrics.py::test_empty_prediction_nonempty_target PASSED                   [ 57%]
+tests/test_metrics.py::test_single_pixel_match PASSED                                 [ 57%]
+tests/test_metrics.py::test_invalid_class_ids_raise PASSED                            [ 58%]
+tests/test_models.py::TestUNet::test_forward_pass_shape PASSED                        [ 58%]
+tests/test_models.py::TestUNet::test_forward_pass_no_nan PASSED                       [ 58%]
+tests/test_models.py::TestUNet::test_parameter_count PASSED                           [ 59%]
+tests/test_models.py::TestUNet::test_variable_output_classes[2] PASSED                [ 59%]
+tests/test_models.py::TestUNet::test_variable_output_classes[5] PASSED                [ 59%]
+tests/test_models.py::TestUNet::test_variable_output_classes[10] PASSED               [ 60%]
+tests/test_models.py::TestUNet::test_non_bilinear_upsampling PASSED                   [ 60%]
+tests/test_models.py::TestUNetComponents::test_double_conv_output_shape PASSED        [ 60%]
+tests/test_models.py::TestUNetComponents::test_down_halves_spatial_dims PASSED        [ 61%]
+tests/test_models.py::TestUNetComponents::test_up_non_bilinear PASSED                 [ 61%]
+tests/test_models.py::TestUNetComponents::test_out_conv_output_shape PASSED           [ 61%]
+tests/test_models.py::TestDeepLabV3::test_forward_pass_shape PASSED                   [ 61%]
+tests/test_models.py::TestDeepLabV3::test_forward_pass_no_nan PASSED                  [ 62%]
+tests/test_models.py::TestUNetTestFunction::test_test_unet_runs_successfully PASSED   [ 62%]
+tests/test_models.py::TestUNetTestFunction::test_test_unet_output_shape_verification PASSED [
+ 62%]                                                                                        tests/test_statistics.py::TestPairedTTest::test_very_similar_scores_not_significant PASSED [ 63%]
+tests/test_statistics.py::TestPairedTTest::test_clearly_different_scores_significant PASSED [ 63%]                                                                                        tests/test_statistics.py::TestPairedTTest::test_returns_float_types PASSED            [ 63%]
+tests/test_statistics.py::TestPairedTTest::test_unequal_length_raises_error PASSED    [ 64%]
+tests/test_statistics.py::TestPairedTTest::test_custom_alpha_level PASSED             [ 64%]
+tests/test_statistics.py::TestPairedTTest::test_positive_t_stat_when_a_greater PASSED [ 64%]
+tests/test_statistics.py::TestPairedTTest::test_negative_t_stat_when_b_greater PASSED [ 65%]
+tests/test_statistics.py::TestBootstrapCI::test_mean_within_ci PASSED                 [ 65%]
+tests/test_statistics.py::TestBootstrapCI::test_ci_contains_true_mean PASSED          [ 65%]
+tests/test_statistics.py::TestBootstrapCI::test_returns_float_types PASSED            [ 66%]
+tests/test_statistics.py::TestBootstrapCI::test_empty_scores_raises_error PASSED      [ 66%]
+tests/test_statistics.py::TestBootstrapCI::test_higher_confidence_wider_ci PASSED     [ 66%]
+tests/test_statistics.py::TestBootstrapCI::test_more_samples_tighter_ci PASSED        [ 67%]
+tests/test_statistics.py::TestBootstrapCI::test_single_value_returns_same_bounds PASSED [ 67%
+]                                                                                            tests/test_statistics.py::TestBootstrapCI::test_random_state_reproducibility PASSED   [ 67%]
+tests/test_statistics.py::TestComputeCohensD::test_identical_scores_zero_effect PASSED [ 68%]
+tests/test_statistics.py::TestComputeCohensD::test_large_difference_large_effect PASSED [ 68%]                                                                                            tests/test_statistics.py::TestComputeCohensD::test_positive_when_a_greater PASSED     [ 68%]
+tests/test_statistics.py::TestComputeCohensD::test_negative_when_b_greater PASSED     [ 69%]
+tests/test_statistics.py::TestComputeCohensD::test_unequal_length_raises_error PASSED [ 69%]
+tests/test_statistics.py::TestComputeCohensD::test_returns_float PASSED               [ 69%]
+tests/test_statistics.py::TestInterpretEffectSize::test_negligible_effect PASSED      [ 69%]
+tests/test_statistics.py::TestInterpretEffectSize::test_small_effect PASSED           [ 70%]
+tests/test_statistics.py::TestInterpretEffectSize::test_medium_effect PASSED          [ 70%]
+tests/test_statistics.py::TestInterpretEffectSize::test_large_effect PASSED           [ 70%]
+tests/test_statistics.py::TestInterpretEffectSize::test_zero_effect PASSED            [ 71%]
+tests/test_statistics.py::TestComparisonResult::test_to_dict_structure PASSED         [ 71%]
+tests/test_statistics.py::TestComparisonResult::test_to_dict_json_serializable PASSED [ 71%]
+tests/test_statistics.py::TestComparisonResult::test_summary_contains_key_info PASSED [ 72%]
+tests/test_statistics.py::TestComparisonResult::test_summary_no_winner_when_not_significant PASSED [ 72%]
+tests/test_statistics.py::TestPairedComparison::test_returns_comparison_result PASSED [ 72%]
+tests/test_statistics.py::TestPairedComparison::test_computes_all_statistics PASSED   [ 73%]
+tests/test_statistics.py::TestPairedComparison::test_stores_raw_scores PASSED         [ 73%]
+tests/test_statistics.py::TestPairedComparison::test_unequal_length_raises_error PASSED [ 73%
+]                                                                                            tests/test_statistics.py::TestPairedComparison::test_custom_names_preserved PASSED    [ 74%]
+tests/test_statistics.py::TestPairedComparison::test_custom_alpha_level PASSED        [ 74%]
+tests/test_statistics.py::TestPrintSignificanceReport::test_does_not_raise PASSED     [ 74%]
+tests/test_statistics.py::TestPrintSignificanceReport::test_outputs_metric_name PASSED [ 75%]
+tests/test_statistics.py::TestPrintSignificanceReport::test_outputs_significance_result PASSED [ 75%]                                                                                     tests/test_statistics.py::TestPrintSignificanceReport::test_outputs_confidence_interval PASSED [ 75%]                                                                                     tests/test_statistics.py::TestPrintSignificanceReport::test_outputs_effect_size PASSED [ 76%]
+tests/test_statistics.py::TestPrintSignificanceReport::test_outputs_std_dev PASSED    [ 76%] tests/test_statistics.py::TestPrintSignificanceReport::test_identifies_better_model_when_significant PASSED [ 76%]                                                                        tests/test_statistics.py::TestPrintSignificanceReport::test_no_significant_difference_message PASSED [ 76%]                                                                               tests/test_trainer.py::TestConstants::test_num_classes_is_binary PASSED               [ 77%]
+tests/test_trainer.py::TestConstants::test_class_names_match_num_classes PASSED       [ 77%]
+tests/test_trainer.py::TestConstants::test_class_names_includes_background PASSED     [ 77%]
+tests/test_trainer.py::TestConstants::test_instrument_weight_greater_than_one PASSED  [ 78%]
+tests/test_trainer.py::TestConstants::test_imagenet_mean_has_three_channels PASSED    [ 78%]
+tests/test_trainer.py::TestConstants::test_imagenet_std_has_three_channels PASSED     [ 78%]
+tests/test_trainer.py::TestSeedEverything::test_seed_produces_deterministic_numpy PASSED [ 79
+%]                                                                                           tests/test_trainer.py::TestSeedEverything::test_seed_produces_deterministic_torch PASSED [ 79
+%]                                                                                           tests/test_trainer.py::TestSeedEverything::test_different_seeds_produce_different_values PASSED [ 79%]                                                                                    tests/test_trainer.py::TestAdditiveGaussianNoise::test_noise_with_zero_std_returns_unchanged PASSED [ 80%]
+tests/test_trainer.py::TestAdditiveGaussianNoise::test_noise_with_positive_std_modifies_tensor PASSED [ 80%]                                                                              tests/test_trainer.py::TestAdditiveGaussianNoise::test_noise_output_clamped_to_valid_range PASSED [ 80%]                                                                                  tests/test_trainer.py::TestAdditiveGaussianNoise::test_noise_preserves_tensor_shape PASSED [ 81%]
+tests/test_trainer.py::TestAdditiveGaussianNoise::test_noise_is_stochastic PASSED     [ 81%]
+tests/test_trainer.py::TestConfusionMatrixMulticlass::test_perfect_prediction_diagonal PASSED [ 81%]                                                                                      tests/test_trainer.py::TestConfusionMatrixMulticlass::test_confusion_matrix_shape PASSED [ 82%]                                                                                           tests/test_trainer.py::TestConfusionMatrixMulticlass::test_confusion_matrix_total_equals_pixels PASSED [ 82%]                                                                             tests/test_trainer.py::TestConfusionMatrixMulticlass::test_confusion_matrix_binary_values PASSED [ 82%]                                                                                   tests/test_trainer.py::TestComputeMetricsFromCM::test_perfect_prediction_metrics PASSED [ 83%]                                                                                            tests/test_trainer.py::TestComputeMetricsFromCM::test_metrics_with_errors PASSED      [ 83%]
+tests/test_trainer.py::TestComputeMetricsFromCM::test_iou_calculation PASSED          [ 83%]
+tests/test_trainer.py::TestComputeMetricsFromCM::test_dice_calculation PASSED         [ 84%]
+tests/test_trainer.py::TestComputeMetricsFromCM::test_support_calculation PASSED      [ 84%]
+tests/test_trainer.py::TestComputeMetricsFromCM::test_handles_zero_predictions PASSED [ 84%]
+tests/test_trainer.py::TestComputeMetricsFromCM::test_handles_empty_class PASSED      [ 84%]
+tests/test_trainer.py::TestTrainModelFunction::test_train_model_returns_model_and_losses PASSED [ 85%]                                                                                    tests/test_trainer.py::TestSyntheticDataGeneration::test_creates_frames_and_masks PASSED [ 85%]                                                                                           tests/test_trainer.py::TestSyntheticDataGeneration::test_skips_existing_data PASSED   [ 85%]
+tests/test_trainer.py::TestSyntheticDataGeneration::test_force_regenerates_data PASSED [ 86%]
+tests/test_trainer.py::TestSyntheticDataGeneration::test_frames_have_valid_dimensions PASSED [ 86%]
+tests/test_trainer.py::TestSyntheticDataGeneration::test_masks_contain_instruments PASSED [ 86%]                                                                                          tests/test_trainer.py::TestEvaluateModel::test_evaluate_returns_metrics_dict PASSED   [ 87%]
+tests/test_trainer.py::TestEvaluateModel::test_evaluate_exports_predictions PASSED    [ 87%]
+tests/test_trainer.py::TestLoadTrainingConfig::test_load_default_config PASSED        [ 87%]
+tests/test_trainer.py::TestLoadTrainingConfig::test_cli_overrides_applied PASSED      [ 88%]
+tests/test_trainer.py::TestLoadTrainingConfig::test_partial_cli_overrides PASSED      [ 88%]
+tests/test_trainer.py::TestTrainModelWithConfig::test_train_model_with_config PASSED  [ 88%]
+tests/test_trainer.py::TestConfusionMatrixBoundary::test_single_class_prediction PASSED [ 89%
+]                                                                                            tests/test_trainer.py::TestConfusionMatrixBoundary::test_large_masks PASSED           [ 89%]
+tests/test_trainer.py::TestLoadDependency::test_load_existing_module PASSED           [ 89%]
+tests/test_trainer.py::TestLoadDependency::test_load_nonexistent_module_raises PASSED [ 90%]
+tests/test_trainer.py::TestComputeMetricsIntegration::test_metrics_keys_present PASSED [ 90%]
+tests/test_trainer.py::TestComputeMetricsIntegration::test_per_class_arrays_have_correct_length PASSED [ 90%]                                                                             tests/test_trainer.py::TestEvaluateModelWithVisuals::test_constants_defined PASSED    [ 91%]
+tests/test_trainer.py::TestParseCliArgs::test_default_frame_dir PASSED                [ 91%]
+tests/test_trainer.py::TestParseCliArgs::test_default_mask_dir PASSED                 [ 91%]
+tests/test_trainer.py::TestParseCliArgs::test_custom_frame_dir PASSED                 [ 92%]
+tests/test_trainer.py::TestParseCliArgs::test_custom_mask_dir PASSED                  [ 92%]
+tests/test_trainer.py::TestParseCliArgs::test_epochs_argument PASSED                  [ 92%]
+tests/test_trainer.py::TestParseCliArgs::test_batch_size_argument PASSED              [ 92%]
+tests/test_trainer.py::TestParseCliArgs::test_learning_rate_argument PASSED           [ 93%]
+tests/test_trainer.py::TestParseCliArgs::test_skip_synthetic_flag PASSED              [ 93%]
+tests/test_trainer.py::TestParseCliArgs::test_config_argument PASSED                  [ 93%]
+tests/test_trainer.py::TestParseCliArgs::test_prediction_dir_argument PASSED          [ 94%]
+tests/test_trainer.py::TestParseCliArgs::test_weight_decay_argument PASSED            [ 94%]
+tests/test_trainer.py::TestParseCliArgs::test_num_workers_argument PASSED             [ 94%]
+tests/test_trainer.py::TestParseCliArgs::test_pin_memory_flag PASSED                  [ 95%]
+tests/test_trainer.py::TestParseCliArgs::test_no_pin_memory_flag PASSED               [ 95%]
+tests/test_trainer.py::TestParseCliArgs::test_train_split_argument PASSED             [ 95%]
+tests/test_trainer.py::TestParseCliArgs::test_augment_flag PASSED                     [ 96%]
+tests/test_trainer.py::TestParseCliArgs::test_no_augment_flag PASSED                  [ 96%]
+tests/test_trainer.py::TestParseCliArgs::test_image_size_argument PASSED              [ 96%]
+tests/test_training_integration.py::TestTrainingIntegration::test_single_epoch_training_completes PASSED [ 97%]                                                                           tests/test_training_integration.py::TestTrainingIntegration::test_model_produces_valid_gradients PASSED [ 97%]                                                                            tests/test_training_integration.py::TestTrainingIntegration::test_model_improves_over_epochs PASSED [ 97%]
+tests/test_training_integration.py::TestTrainingIntegration::test_weighted_loss_handles_class_imbalance PASSED [ 98%]                                                                     tests/test_training_integration.py::TestTrainingIntegration::test_model_state_dict_saveable PASSED [ 98%]
+tests/test_training_integration.py::TestTrainingDataPipeline::test_dataloader_yields_correct_batch_shape PASSED [ 98%]                                                                    tests/test_training_integration.py::TestTrainingDataPipeline::test_mask_values_are_binary_after_remapping PASSED [ 99%]                                                                   tests/test_training_integration.py::TestTrainingDataPipeline::test_dataloader_handles_small_dataset PASSED [ 99%]                                                                         tests/test_training_integration.py::TestTrainingWithAugmentation::test_augmented_data_produces_valid_tensors PASSED [ 99%]                                                                tests/test_training_integration.py::TestTrainingWithAugmentation::test_augmentation_is_stochastic PASSED [100%]
+====================================== tests coverage ======================================
+_____________________ coverage: platform win32, python 3.9.13-final-0 ______________________
+
+Name                                                     Stmts   Miss  Cover   Missing
+--------------------------------------------------------------------------------------
+src\surgical_segmentation\__init__.py                        5      0   100%
+src\surgical_segmentation\datasets\__init__.py               2      0   100%
+src\surgical_segmentation\datasets\surgical_dataset.py      57      0   100%
+src\surgical_segmentation\evaluation\__init__.py             2      0   100%
+src\surgical_segmentation\evaluation\analyzer.py           218      3    99%   384-391, 419
+src\surgical_segmentation\evaluation\metrics.py             67      1    99%   42
+src\surgical_segmentation\evaluation\statistics.py         115      1    99%   100
+src\surgical_segmentation\models\__init__.py                 3      0   100%
+src\surgical_segmentation\models\deeplabv3.py               43     18    58%   24-28, 49-62,
+84
+src\surgical_segmentation\models\unet.py                    81      1    99%   146
+src\surgical_segmentation\training\__init__.py               2      0   100%
+src\surgical_segmentation\training\cross_validation.py     191     67    65%   255, 284, 324-
+421, 425-451, 455-456, 471                                                                   src\surgical_segmentation\training\trainer.py              331     99    70%   554, 645-647,
+668-695, 702-704, 775-954, 958
+src\surgical_segmentation\utils\__init__.py                  2      0   100%
+src\surgical_segmentation\utils\config.py                  185      3    98%   261, 328, 436
+--------------------------------------------------------------------------------------
+TOTAL                                                     1304    193    85%
+============================= 313 passed in 329.07s (0:05:29) ==============================
