@@ -376,6 +376,10 @@ def create_synthetic_surgical_frames(
 
 # Deferred imports to avoid circular dependencies (these modules import from trainer)
 from surgical_segmentation.datasets import SurgicalDataset  # noqa: E402, F811
+from surgical_segmentation.evaluation.metrics import (  # noqa: E402, F811
+    compute_metrics_from_cm,
+    confusion_matrix_multiclass,
+)
 from surgical_segmentation.models.deeplabv3 import InstrumentSegmentationModel  # noqa: E402, F811
 from surgical_segmentation.utils.config import Config, load_config  # noqa: E402, F811
 
@@ -572,107 +576,6 @@ def train_model(
 # ============================================
 
 
-def confusion_matrix_multiclass(true_mask: np.ndarray, pred_mask: np.ndarray, num_classes: int):
-    """
-    Compute confusion matrix for semantic segmentation masks.
-
-    Efficiently computes the pixel-wise confusion matrix using vectorized
-    operations. Handles arbitrary mask shapes and filters invalid pixels.
-
-    Args:
-        true_mask: Ground truth segmentation mask with integer class labels.
-                   Shape can be (H, W) or any broadcastable shape.
-        pred_mask: Predicted segmentation mask with integer class labels.
-                   Must have same shape as true_mask.
-        num_classes: Total number of classes (including background).
-                     Class indices must be in range [0, num_classes).
-
-    Returns:
-        np.ndarray: Confusion matrix of shape (num_classes, num_classes)
-                    where cm[i, j] = number of pixels with true class i
-                    predicted as class j.
-
-    Example:
-        >>> true = np.array([[0, 0, 1], [0, 1, 1]])
-        >>> pred = np.array([[0, 0, 0], [0, 1, 1]])
-        >>> cm = confusion_matrix_multiclass(true, pred, num_classes=2)
-        >>> cm
-        array([[3, 0],
-               [1, 2]])
-
-    Note:
-        Pixels with class values outside [0, num_classes) are ignored.
-        This handles edge cases like invalid mask regions.
-    """
-    cm = np.zeros((num_classes, num_classes), dtype=np.int64)
-    valid = (true_mask >= 0) & (true_mask < num_classes)
-    true = true_mask[valid].ravel()
-    pred = pred_mask[valid].ravel()
-    indices = true * num_classes + pred
-    counts = np.bincount(indices, minlength=num_classes**2)
-    cm += counts.reshape(num_classes, num_classes)
-    return cm
-
-
-def compute_metrics_from_cm(cm: np.ndarray):
-    """
-    Compute segmentation metrics from a confusion matrix.
-
-    Calculates standard semantic segmentation evaluation metrics including
-    precision, recall, IoU (Jaccard Index), and Dice coefficient for each
-    class. These metrics are standard in medical image segmentation and
-    enable comparison with published literature.
-
-    Args:
-        cm: Confusion matrix of shape (num_classes, num_classes) where
-            cm[i, j] = count of pixels with true class i predicted as j.
-
-    Returns:
-        Dict[str, np.ndarray]: Dictionary containing per-class metrics:
-            - 'precision': TP / (TP + FP) for each class
-            - 'recall': TP / (TP + FN) for each class (sensitivity)
-            - 'iou': Intersection over Union (Jaccard Index)
-            - 'dice': Dice coefficient (F1 score)
-            - 'support': Number of ground truth pixels per class
-            - 'accuracy': Overall pixel accuracy (scalar)
-
-    Metric Definitions:
-        - IoU = TP / (TP + FP + FN)
-        - Dice = 2*TP / (2*TP + FP + FN) = 2*IoU / (1 + IoU)
-        - Precision = TP / (TP + FP)
-        - Recall = TP / (TP + FN)
-
-    Example:
-        >>> cm = np.array([[100, 5], [3, 92]])
-        >>> metrics = compute_metrics_from_cm(cm)
-        >>> print(f"IoU: {metrics['iou']}")
-        >>> print(f"Dice: {metrics['dice']}")
-
-    Note:
-        Handles division by zero gracefully by returning 0.0 for
-        undefined metrics (e.g., when a class has no predictions).
-    """
-    tp = np.diag(cm).astype(np.float64)
-    fp = cm.sum(axis=0) - tp
-    fn = cm.sum(axis=1) - tp
-    support = cm.sum(axis=1)
-
-    precision = np.divide(tp, tp + fp, out=np.zeros_like(tp), where=(tp + fp) > 0)
-    recall = np.divide(tp, tp + fn, out=np.zeros_like(tp), where=(tp + fn) > 0)
-    iou = np.divide(tp, tp + fp + fn, out=np.zeros_like(tp), where=(tp + fp + fn) > 0)
-    dice = np.divide(2 * tp, 2 * tp + fp + fn, out=np.zeros_like(tp), where=(2 * tp + fp + fn) > 0)
-    accuracy = tp.sum() / cm.sum() if cm.sum() else 0.0
-
-    return {
-        "precision": precision,
-        "recall": recall,
-        "iou": iou,
-        "dice": dice,
-        "support": support,
-        "accuracy": accuracy,
-    }
-
-
 def evaluate_model(
     model,
     dataset,
@@ -831,7 +734,7 @@ def main():
     1. Parse command-line arguments for data paths
     2. Generate synthetic data if needed (for demo purposes)
     3. Create train/validation split with proper transforms
-    4. Train DeepLabV3+ model with class-weighted loss
+    4. Train DeepLabV3 model with class-weighted loss
     5. Evaluate on validation set and generate visualizations
     6. Save trained model weights
 
@@ -902,13 +805,13 @@ def main():
         train_transform = transforms.Compose(
             [
                 transforms.Resize((image_size, image_size)),
+                transforms.ToTensor(),
                 transforms.ColorJitter(
                     brightness=color_jitter.brightness,
                     contrast=color_jitter.contrast,
                     saturation=color_jitter.saturation,
                     hue=color_jitter.hue,
                 ),
-                transforms.ToTensor(),
                 AdditiveGaussianNoise(std=config.augmentation.gaussian_noise_std),
                 transforms.Normalize(mean=normalize_mean, std=normalize_std),
             ]

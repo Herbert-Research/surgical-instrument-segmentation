@@ -9,6 +9,13 @@ import pytest
 import torch
 from PIL import Image
 
+from surgical_segmentation.evaluation.metrics import (
+    compute_dice,
+    compute_iou,
+    compute_precision,
+    compute_recall,
+    confusion_matrix_multiclass,
+)
 from surgical_segmentation.models import InstrumentSegmentationModel
 
 
@@ -62,10 +69,7 @@ class TestEvaluationMetrics:
 
         gt = np.array(Image.open(gt_dir / "mask_00001.png"))
         pred = np.array(Image.open(pred_dir / "mask_00001.png"))
-
-        intersection = np.logical_and(gt == 1, pred == 1).sum()
-        union = np.logical_or(gt == 1, pred == 1).sum()
-        iou = intersection / union if union > 0 else 1.0
+        iou = compute_iou(torch.tensor(pred), torch.tensor(gt))
 
         assert iou == pytest.approx(1.0)
 
@@ -75,9 +79,7 @@ class TestEvaluationMetrics:
 
         gt = np.array(Image.open(gt_dir / "mask_00001.png"))
         pred = np.array(Image.open(pred_dir / "mask_00001.png"))
-
-        intersection = np.logical_and(gt == 1, pred == 1).sum()
-        dice = 2 * intersection / (gt.sum() + pred.sum()) if (gt.sum() + pred.sum()) > 0 else 1.0
+        dice = compute_dice(torch.tensor(pred), torch.tensor(gt))
 
         assert dice == pytest.approx(1.0)
 
@@ -87,10 +89,7 @@ class TestEvaluationMetrics:
 
         gt = np.array(Image.open(gt_dir / "mask_00002.png"))
         pred = np.array(Image.open(pred_dir / "mask_00002.png"))
-
-        intersection = np.logical_and(gt == 1, pred == 1).sum()
-        union = np.logical_or(gt == 1, pred == 1).sum()
-        iou = intersection / union if union > 0 else 0.0
+        iou = compute_iou(torch.tensor(pred), torch.tensor(gt))
 
         # intersection = 50*100 = 5000
         # union = 10000 + 10000 - 5000 = 15000
@@ -103,9 +102,7 @@ class TestEvaluationMetrics:
 
         gt = np.array(Image.open(gt_dir / "mask_00002.png"))
         pred = np.array(Image.open(pred_dir / "mask_00002.png"))
-
-        intersection = np.logical_and(gt == 1, pred == 1).sum()
-        dice = 2 * intersection / (gt.sum() + pred.sum())
+        dice = compute_dice(torch.tensor(pred), torch.tensor(gt))
 
         # intersection = 5000
         # sum(gt) = 10000, sum(pred) = 10000
@@ -118,12 +115,9 @@ class TestEvaluationMetrics:
 
         gt = np.array(Image.open(gt_dir / "mask_00003.png"))
         pred = np.array(Image.open(pred_dir / "mask_00003.png"))
+        iou = compute_iou(torch.tensor(pred), torch.tensor(gt))
 
-        intersection = np.logical_and(gt == 1, pred == 1).sum()
-        union = np.logical_or(gt == 1, pred == 1).sum()
-        iou = intersection / union if union > 0 else 0.0
-
-        assert iou == pytest.approx(0.0)
+        assert iou == pytest.approx(0.0, abs=1e-6)
 
     def test_iou_dice_mathematical_relationship(self):
         """Verify IoU and Dice satisfy: Dice = 2*IoU / (1+IoU)."""
@@ -134,11 +128,8 @@ class TestEvaluationMetrics:
         gt[0:60, 0:60] = 1  # 3600 pixels
         pred[30:90, 0:60] = 1  # 3600 pixels, 1800 overlap
 
-        intersection = np.logical_and(gt == 1, pred == 1).sum()
-        union = np.logical_or(gt == 1, pred == 1).sum()
-
-        iou = intersection / union
-        dice = 2 * intersection / (gt.sum() + pred.sum())
+        iou = compute_iou(torch.tensor(pred), torch.tensor(gt))
+        dice = compute_dice(torch.tensor(pred), torch.tensor(gt))
 
         expected_dice = 2 * iou / (1 + iou)
         assert dice == pytest.approx(expected_dice, rel=0.01)
@@ -153,14 +144,8 @@ class TestConfusionMatrix:
 
         pred = gt.copy()  # Perfect prediction
 
-        # Compute confusion matrix manually
         num_classes = 2
-        cm = np.zeros((num_classes, num_classes), dtype=np.int64)
-        for true_class in range(num_classes):
-            for pred_class in range(num_classes):
-                cm[true_class, pred_class] = np.logical_and(
-                    gt == true_class, pred == pred_class
-                ).sum()
+        cm = confusion_matrix_multiclass(gt, pred, num_classes)
 
         # All predictions should be on diagonal
         assert cm[0, 0] == 12  # True negatives
@@ -179,12 +164,7 @@ class TestConfusionMatrix:
         )
 
         num_classes = 2
-        cm = np.zeros((num_classes, num_classes), dtype=np.int64)
-        for true_class in range(num_classes):
-            for pred_class in range(num_classes):
-                cm[true_class, pred_class] = np.logical_and(
-                    gt == true_class, pred == pred_class
-                ).sum()
+        cm = confusion_matrix_multiclass(gt, pred, num_classes)
 
         assert cm[0, 0] == 11  # True negatives (12 - 1 FP)
         assert cm[1, 1] == 3  # True positives (4 - 1 FN)
@@ -258,12 +238,8 @@ class TestPrecisionRecall:
         gt = np.array([0, 0, 0, 1, 1, 1])
         pred = np.array([0, 0, 0, 1, 1, 1])
 
-        tp = np.logical_and(gt == 1, pred == 1).sum()
-        fp = np.logical_and(gt == 0, pred == 1).sum()
-        fn = np.logical_and(gt == 1, pred == 0).sum()
-
-        precision = tp / (tp + fp) if (tp + fp) > 0 else 1.0
-        recall = tp / (tp + fn) if (tp + fn) > 0 else 1.0
+        precision = compute_precision(torch.tensor(pred), torch.tensor(gt))
+        recall = compute_recall(torch.tensor(pred), torch.tensor(gt))
 
         assert precision == pytest.approx(1.0)
         assert recall == pytest.approx(1.0)
@@ -273,10 +249,7 @@ class TestPrecisionRecall:
         gt = np.array([0, 0, 0, 1, 1, 1])
         pred = np.array([1, 1, 0, 1, 1, 1])  # Two FPs
 
-        tp = np.logical_and(gt == 1, pred == 1).sum()  # 3
-        fp = np.logical_and(gt == 0, pred == 1).sum()  # 2
-
-        precision = tp / (tp + fp)  # 3/5 = 0.6
+        precision = compute_precision(torch.tensor(pred), torch.tensor(gt))
 
         assert precision == pytest.approx(0.6, rel=0.01)
 
@@ -285,10 +258,7 @@ class TestPrecisionRecall:
         gt = np.array([0, 0, 0, 1, 1, 1])
         pred = np.array([0, 0, 0, 0, 1, 1])  # One FN
 
-        tp = np.logical_and(gt == 1, pred == 1).sum()  # 2
-        fn = np.logical_and(gt == 1, pred == 0).sum()  # 1
-
-        recall = tp / (tp + fn)  # 2/3 = 0.666...
+        recall = compute_recall(torch.tensor(pred), torch.tensor(gt))
 
         assert recall == pytest.approx(2 / 3, rel=0.01)
 
@@ -297,13 +267,9 @@ class TestPrecisionRecall:
         gt = np.array([0, 0, 0, 1, 1, 1, 1, 1])
         pred = np.array([1, 0, 0, 0, 1, 1, 1, 1])  # 1 FP, 1 FN
 
-        tp = np.logical_and(gt == 1, pred == 1).sum()  # 4
-        fp = np.logical_and(gt == 0, pred == 1).sum()  # 1
-        fn = np.logical_and(gt == 1, pred == 0).sum()  # 1
-
-        precision = tp / (tp + fp)  # 4/5 = 0.8
-        recall = tp / (tp + fn)  # 4/5 = 0.8
-        f1 = 2 * precision * recall / (precision + recall)  # 0.8
+        precision = compute_precision(torch.tensor(pred), torch.tensor(gt))
+        recall = compute_recall(torch.tensor(pred), torch.tensor(gt))
+        f1 = 2 * precision * recall / (precision + recall)
 
         assert f1 == pytest.approx(0.8, rel=0.01)
 
@@ -318,12 +284,9 @@ class TestEdgeCases:
 
         pred = np.zeros((100, 100), dtype=np.uint8)  # No predictions
 
-        intersection = np.logical_and(gt == 1, pred == 1).sum()
-        union = np.logical_or(gt == 1, pred == 1).sum()
+        iou = compute_iou(torch.tensor(pred), torch.tensor(gt))
 
-        iou = intersection / union if union > 0 else 0.0
-
-        assert iou == pytest.approx(0.0)
+        assert iou == pytest.approx(0.0, abs=1e-6)
 
     def test_empty_ground_truth_mask(self):
         """Handle case where ground truth has no instruments."""
@@ -332,24 +295,16 @@ class TestEdgeCases:
         pred = np.zeros((100, 100), dtype=np.uint8)
         pred[40:60, 40:60] = 1  # Model predicts instruments
 
-        # When GT is empty but prediction exists, IoU should be 0
-        intersection = np.logical_and(gt == 1, pred == 1).sum()
-        union = np.logical_or(gt == 1, pred == 1).sum()
+        iou = compute_iou(torch.tensor(pred), torch.tensor(gt))
 
-        iou = intersection / union if union > 0 else 1.0
-
-        assert iou == pytest.approx(0.0)
+        assert iou == pytest.approx(0.0, abs=1e-6)
 
     def test_both_masks_empty(self):
         """Handle case where both masks are empty (no instruments)."""
         gt = np.zeros((100, 100), dtype=np.uint8)
         pred = np.zeros((100, 100), dtype=np.uint8)
 
-        intersection = np.logical_and(gt == 1, pred == 1).sum()
-        union = np.logical_or(gt == 1, pred == 1).sum()
-
-        # When both are empty, IoU is typically defined as 1.0 (correct prediction)
-        iou = intersection / union if union > 0 else 1.0
+        iou = compute_iou(torch.tensor(pred), torch.tensor(gt))
 
         assert iou == pytest.approx(1.0)
 
@@ -361,9 +316,6 @@ class TestEdgeCases:
         pred = np.zeros((100, 100), dtype=np.uint8)
         pred[50, 50] = 1
 
-        intersection = np.logical_and(gt == 1, pred == 1).sum()
-        union = np.logical_or(gt == 1, pred == 1).sum()
-
-        iou = intersection / union
+        iou = compute_iou(torch.tensor(pred), torch.tensor(gt))
 
         assert iou == pytest.approx(1.0)

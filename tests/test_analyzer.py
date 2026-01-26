@@ -12,11 +12,13 @@ from surgical_segmentation.evaluation.analyzer import (
     binary_confusion_matrix,
     build_preview_image,
     colorize_mask,
-    compute_multiclass_metrics,
-    confusion_matrix_multiclass,
     load_mask_prediction_pairs,
     precision_recall_curve_manual,
     resolve_class_names,
+)
+from surgical_segmentation.evaluation.metrics import (
+    compute_metrics_from_cm,
+    confusion_matrix_multiclass,
 )
 
 
@@ -260,7 +262,7 @@ class TestComputeMulticlassMetrics:
         """Verify perfect prediction yields all 1.0 metrics."""
         cm = np.array([[50, 0], [0, 50]], dtype=np.int64)
 
-        metrics = compute_multiclass_metrics(cm)
+        metrics = compute_metrics_from_cm(cm)
 
         np.testing.assert_array_almost_equal(metrics["precision"], [1.0, 1.0])
         np.testing.assert_array_almost_equal(metrics["recall"], [1.0, 1.0])
@@ -274,7 +276,7 @@ class TestComputeMulticlassMetrics:
         # Class 1: TP=30, FP=20
         cm = np.array([[40, 20], [10, 30]], dtype=np.int64)
 
-        metrics = compute_multiclass_metrics(cm)
+        metrics = compute_metrics_from_cm(cm)
 
         # Precision[0] = 40 / (40 + 10) = 0.8
         # Precision[1] = 30 / (30 + 20) = 0.6
@@ -287,7 +289,7 @@ class TestComputeMulticlassMetrics:
         # Class 1: TP=30, FN=10
         cm = np.array([[40, 20], [10, 30]], dtype=np.int64)
 
-        metrics = compute_multiclass_metrics(cm)
+        metrics = compute_metrics_from_cm(cm)
 
         # Recall[0] = 40 / (40 + 20) = 0.667
         # Recall[1] = 30 / (30 + 10) = 0.75
@@ -298,7 +300,7 @@ class TestComputeMulticlassMetrics:
         """Verify IoU = TP / (TP + FP + FN)."""
         cm = np.array([[80, 10], [15, 45]], dtype=np.int64)
 
-        metrics = compute_multiclass_metrics(cm)
+        metrics = compute_metrics_from_cm(cm)
 
         # IoU[1] = 45 / (45 + 10 + 15) = 45/70
         expected_iou = 45 / 70
@@ -308,7 +310,7 @@ class TestComputeMulticlassMetrics:
         """Verify Dice = 2*TP / (2*TP + FP + FN)."""
         cm = np.array([[80, 10], [15, 45]], dtype=np.int64)
 
-        metrics = compute_multiclass_metrics(cm)
+        metrics = compute_metrics_from_cm(cm)
 
         # Dice[1] = 2*45 / (2*45 + 10 + 15) = 90/115
         expected_dice = 90 / 115

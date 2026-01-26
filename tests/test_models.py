@@ -123,5 +123,5 @@ class TestUNetTestFunction:
 
         test_unet()
         captured = capsys.readouterr()
-        # test_unet should print something about output shape
-        assert "output" in captured.out.lower() or len(captured.out) >= 0
+        assert "U-Net test passed" in captured.out
+        assert "Output shape: torch.Size([1, 2, 256, 256])" in captured.out

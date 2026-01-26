@@ -19,6 +19,11 @@ import numpy as np
 import seaborn as sns
 from PIL import Image
 
+from surgical_segmentation.evaluation.metrics import (
+    compute_metrics_from_cm,
+    confusion_matrix_multiclass,
+)
+
 FIGURES_DIR = Path("outputs/figures")
 DEFAULT_OUTPUT = FIGURES_DIR / "comprehensive_analysis.png"
 DEFAULT_CLASS_NAMES = ["background", "instrument"]
@@ -146,39 +151,6 @@ def load_mask_prediction_pairs(mask_dir: Path, pred_dir: Path, max_samples: int)
 
         pairs.append({"name": key, "true": true, "pred": pred})
     return pairs
-
-
-def confusion_matrix_multiclass(true_mask: np.ndarray, pred_mask: np.ndarray, num_classes: int):
-    cm = np.zeros((num_classes, num_classes), dtype=np.int64)
-    valid = (true_mask >= 0) & (true_mask < num_classes)
-    true = true_mask[valid].ravel()
-    pred = pred_mask[valid].ravel()
-    flat_index = true * num_classes + pred
-    counts = np.bincount(flat_index, minlength=num_classes**2)
-    cm += counts.reshape(num_classes, num_classes)
-    return cm
-
-
-def compute_multiclass_metrics(cm: np.ndarray):
-    tp = np.diag(cm).astype(np.float64)
-    fp = cm.sum(axis=0) - tp
-    fn = cm.sum(axis=1) - tp
-    support = cm.sum(axis=1)
-
-    precision = np.divide(tp, tp + fp, out=np.zeros_like(tp), where=(tp + fp) > 0)
-    recall = np.divide(tp, tp + fn, out=np.zeros_like(tp), where=(tp + fn) > 0)
-    iou = np.divide(tp, tp + fp + fn, out=np.zeros_like(tp), where=(tp + fp + fn) > 0)
-    dice = np.divide(2 * tp, 2 * tp + fp + fn, out=np.zeros_like(tp), where=(2 * tp + fp + fn) > 0)
-    accuracy = tp.sum() / cm.sum() if cm.sum() > 0 else 0.0
-
-    return {
-        "precision": precision,
-        "recall": recall,
-        "iou": iou,
-        "dice": dice,
-        "support": support,
-        "accuracy": accuracy,
-    }
 
 
 def colorize_mask(mask: np.ndarray, num_classes: int):
@@ -331,7 +303,7 @@ def run_dataset_analysis(args: argparse.Namespace) -> None:
             true_mask = true_binary
 
         aggregate_cm += confusion_matrix_multiclass(true_mask, pred_mask, args.num_classes)
-    metrics = compute_multiclass_metrics(aggregate_cm)
+    metrics = compute_metrics_from_cm(aggregate_cm)
     summary_lines = [
         "=" * 70,
         "REAL DATASET EVALUATION",

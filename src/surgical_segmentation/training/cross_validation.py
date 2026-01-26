@@ -21,6 +21,10 @@ from torchvision import transforms
 from tqdm import tqdm
 
 from surgical_segmentation.datasets import SurgicalDataset
+from surgical_segmentation.evaluation.metrics import (
+    compute_metrics_from_cm,
+    confusion_matrix_multiclass,
+)
 from surgical_segmentation.models import InstrumentSegmentationModel, UNet
 
 NUM_CLASSES = 2  # Background + instrument
@@ -142,13 +146,13 @@ def build_transforms() -> tuple[transforms.Compose, transforms.Compose]:
     train_transform = transforms.Compose(
         [
             transforms.Resize((256, 256)),
+            transforms.ToTensor(),
             transforms.ColorJitter(
                 brightness=0.2,
                 contrast=0.2,
                 saturation=0.1,
                 hue=0.02,
             ),
-            transforms.ToTensor(),
             transforms.Normalize(mean=IMAGENET_MEAN, std=IMAGENET_STD),
         ]
     )
@@ -255,38 +259,6 @@ def train_one_epoch(
     return epoch_loss / max(1, len(dataloader))
 
 
-def confusion_matrix_multiclass(true_mask: np.ndarray, pred_mask: np.ndarray, num_classes: int):
-    cm = np.zeros((num_classes, num_classes), dtype=np.int64)
-    valid = (true_mask >= 0) & (true_mask < num_classes)
-    true = true_mask[valid].ravel()
-    pred = pred_mask[valid].ravel()
-    flat_index = true * num_classes + pred
-    counts = np.bincount(flat_index, minlength=num_classes**2)
-    cm += counts.reshape(num_classes, num_classes)
-    return cm
-
-
-def compute_metrics_from_cm(cm: np.ndarray) -> dict[str, Any]:
-    tp = np.diag(cm).astype(np.float64)
-    fp = cm.sum(axis=0) - tp
-    fn = cm.sum(axis=1) - tp
-
-    precision = np.divide(tp, tp + fp, out=np.zeros_like(tp), where=(tp + fp) > 0)
-    recall = np.divide(tp, tp + fn, out=np.zeros_like(tp), where=(tp + fn) > 0)
-    iou = np.divide(tp, tp + fp + fn, out=np.zeros_like(tp), where=(tp + fp + fn) > 0)
-    dice = np.divide(2 * tp, 2 * tp + fp + fn, out=np.zeros_like(tp), where=(2 * tp + fp + fn) > 0)
-
-    accuracy = tp.sum() / cm.sum() if cm.sum() > 0 else 0.0
-
-    return {
-        "precision": precision,
-        "recall": recall,
-        "iou": iou,
-        "dice": dice,
-        "accuracy": float(accuracy),
-    }
-
-
 def evaluate_model(
     model: nn.Module,
     dataloader: DataLoader,
@@ -313,14 +285,15 @@ def evaluate_model(
                 cm += confusion_matrix_multiclass(true, pred, num_classes)
 
     metrics = compute_metrics_from_cm(cm)
-    metrics["iou_instrument"] = (
-        float(metrics["iou"][1]) if num_classes > 1 else float(metrics["iou"][0])
-    )
-    metrics["dice_instrument"] = (
-        float(metrics["dice"][1]) if num_classes > 1 else float(metrics["dice"][0])
-    )
+    result: dict[str, Any] = {
+        **metrics,
+        "iou_instrument": float(metrics["iou"][1]) if num_classes > 1 else float(metrics["iou"][0]),
+        "dice_instrument": float(metrics["dice"][1])
+        if num_classes > 1
+        else float(metrics["dice"][0]),
+    }
 
-    return metrics
+    return result
 
 
 def leave_one_video_out_cv(
