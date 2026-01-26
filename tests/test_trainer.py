@@ -502,11 +502,27 @@ class TestLoadTrainingConfig:
         from surgical_segmentation.training.trainer import load_training_config
 
         config = load_training_config(
-            cli_overrides={"epochs": 99, "batch_size": 16, "learning_rate": 0.01}
+            cli_overrides={
+                "epochs": 99,
+                "batch_size": 16,
+                "learning_rate": 0.01,
+                "weight_decay": 0.05,
+                "num_workers": 2,
+                "pin_memory": False,
+                "train_split": 0.75,
+                "augment": False,
+                "image_size": 224,
+            }
         )
         assert config.training.epochs == 99
         assert config.training.batch_size == 16
         assert config.training.learning_rate == 0.01
+        assert config.training.weight_decay == 0.05
+        assert config.training.num_workers == 2
+        assert config.training.pin_memory is False
+        assert config.data.train_split == 0.75
+        assert config.data.augment is False
+        assert config.data.image_size == 224
 
     def test_partial_cli_overrides(self):
         """Verify partial CLI overrides work."""
@@ -628,19 +644,19 @@ class TestParseCliArgs:
 
     def test_default_frame_dir(self, monkeypatch):
         """Verify default frame directory."""
-        from surgical_segmentation.training.trainer import DEFAULT_FRAME_DIR, parse_cli_args
+        from surgical_segmentation.training.trainer import parse_cli_args
 
         monkeypatch.setattr("sys.argv", ["train-segmentation"])
         args = parse_cli_args()
-        assert args.frame_dir == DEFAULT_FRAME_DIR
+        assert args.frame_dir is None
 
     def test_default_mask_dir(self, monkeypatch):
         """Verify default mask directory."""
-        from surgical_segmentation.training.trainer import DEFAULT_MASK_DIR, parse_cli_args
+        from surgical_segmentation.training.trainer import parse_cli_args
 
         monkeypatch.setattr("sys.argv", ["train-segmentation"])
         args = parse_cli_args()
-        assert args.mask_dir == DEFAULT_MASK_DIR
+        assert args.mask_dir is None
 
     def test_custom_frame_dir(self, monkeypatch, tmp_path):
         """Verify custom frame directory is parsed."""
@@ -709,3 +725,67 @@ class TestParseCliArgs:
         monkeypatch.setattr("sys.argv", ["train-segmentation", "--prediction-dir", str(pred_dir)])
         args = parse_cli_args()
         assert args.prediction_dir == pred_dir
+
+    def test_weight_decay_argument(self, monkeypatch):
+        """Verify weight-decay argument is parsed."""
+        from surgical_segmentation.training.trainer import parse_cli_args
+
+        monkeypatch.setattr("sys.argv", ["train-segmentation", "--weight-decay", "0.01"])
+        args = parse_cli_args()
+        assert args.weight_decay == 0.01
+
+    def test_num_workers_argument(self, monkeypatch):
+        """Verify num-workers argument is parsed."""
+        from surgical_segmentation.training.trainer import parse_cli_args
+
+        monkeypatch.setattr("sys.argv", ["train-segmentation", "--num-workers", "3"])
+        args = parse_cli_args()
+        assert args.num_workers == 3
+
+    def test_pin_memory_flag(self, monkeypatch):
+        """Verify pin-memory flag is parsed."""
+        from surgical_segmentation.training.trainer import parse_cli_args
+
+        monkeypatch.setattr("sys.argv", ["train-segmentation", "--pin-memory"])
+        args = parse_cli_args()
+        assert args.pin_memory is True
+
+    def test_no_pin_memory_flag(self, monkeypatch):
+        """Verify no-pin-memory flag is parsed."""
+        from surgical_segmentation.training.trainer import parse_cli_args
+
+        monkeypatch.setattr("sys.argv", ["train-segmentation", "--no-pin-memory"])
+        args = parse_cli_args()
+        assert args.pin_memory is False
+
+    def test_train_split_argument(self, monkeypatch):
+        """Verify train-split argument is parsed."""
+        from surgical_segmentation.training.trainer import parse_cli_args
+
+        monkeypatch.setattr("sys.argv", ["train-segmentation", "--train-split", "0.7"])
+        args = parse_cli_args()
+        assert args.train_split == 0.7
+
+    def test_augment_flag(self, monkeypatch):
+        """Verify augment flag is parsed."""
+        from surgical_segmentation.training.trainer import parse_cli_args
+
+        monkeypatch.setattr("sys.argv", ["train-segmentation", "--augment"])
+        args = parse_cli_args()
+        assert args.augment is True
+
+    def test_no_augment_flag(self, monkeypatch):
+        """Verify no-augment flag is parsed."""
+        from surgical_segmentation.training.trainer import parse_cli_args
+
+        monkeypatch.setattr("sys.argv", ["train-segmentation", "--no-augment"])
+        args = parse_cli_args()
+        assert args.augment is False
+
+    def test_image_size_argument(self, monkeypatch):
+        """Verify image-size argument is parsed."""
+        from surgical_segmentation.training.trainer import parse_cli_args
+
+        monkeypatch.setattr("sys.argv", ["train-segmentation", "--image-size", "224"])
+        args = parse_cli_args()
+        assert args.image_size == 224

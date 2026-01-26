@@ -68,19 +68,19 @@ def parse_cli_args() -> argparse.Namespace:
     parser.add_argument(
         "--frame-dir",
         type=Path,
-        default=DEFAULT_FRAME_DIR,
+        default=None,
         help="Directory containing RGB frames (default: data/sample_frames)",
     )
     parser.add_argument(
         "--mask-dir",
         type=Path,
-        default=DEFAULT_MASK_DIR,
+        default=None,
         help="Directory containing mask PNGs (default: data/masks)",
     )
     parser.add_argument(
         "--prediction-dir",
         type=Path,
-        default=DEFAULT_PRED_DIR,
+        default=None,
         help="Directory where prediction PNGs will be written",
     )
     parser.add_argument(
@@ -105,6 +105,58 @@ def parse_cli_args() -> argparse.Namespace:
         type=float,
         default=None,
         help="Learning rate (overrides config file)",
+    )
+    parser.add_argument(
+        "--weight-decay",
+        type=float,
+        default=None,
+        help="Weight decay for optimizer (overrides config file)",
+    )
+    parser.add_argument(
+        "--num-workers",
+        type=int,
+        default=None,
+        help="Number of DataLoader worker processes (overrides config file)",
+    )
+    pin_memory_group = parser.add_mutually_exclusive_group()
+    pin_memory_group.add_argument(
+        "--pin-memory",
+        dest="pin_memory",
+        action="store_true",
+        help="Pin memory for DataLoader (overrides config file)",
+    )
+    pin_memory_group.add_argument(
+        "--no-pin-memory",
+        dest="pin_memory",
+        action="store_false",
+        help="Disable pinned memory in DataLoader (overrides config file)",
+    )
+    parser.set_defaults(pin_memory=None)
+    parser.add_argument(
+        "--train-split",
+        type=float,
+        default=None,
+        help="Fraction of data used for training (overrides config file)",
+    )
+    augment_group = parser.add_mutually_exclusive_group()
+    augment_group.add_argument(
+        "--augment",
+        dest="augment",
+        action="store_true",
+        help="Enable training augmentations (overrides config file)",
+    )
+    augment_group.add_argument(
+        "--no-augment",
+        dest="augment",
+        action="store_false",
+        help="Disable training augmentations (overrides config file)",
+    )
+    parser.set_defaults(augment=None)
+    parser.add_argument(
+        "--image-size",
+        type=int,
+        default=None,
+        help="Square image size for resizing (overrides config file)",
     )
     return parser.parse_args()
 
@@ -188,7 +240,12 @@ print("=" * 70)
 # ============================================
 
 
-def create_synthetic_surgical_frames(frame_dir: Path, mask_dir: Path, force: bool = False):
+def create_synthetic_surgical_frames(
+    frame_dir: Path,
+    mask_dir: Path,
+    force: bool = False,
+    seed: int = DEFAULT_DATA_SEED,
+):
     """
     Create synthetic surgical frames for demonstration and testing.
 
@@ -247,7 +304,7 @@ def create_synthetic_surgical_frames(frame_dir: Path, mask_dir: Path, force: boo
 
     print("\nGenerating synthetic surgical frames...")
 
-    rng = np.random.default_rng(DEFAULT_DATA_SEED)
+    rng = np.random.default_rng(seed)
 
     for i in range(TOTAL_SYNTHETIC_FRAMES):
         frame = np.zeros((480, 640, 3), dtype=np.uint8)
@@ -359,6 +416,18 @@ def load_training_config(
             overrides["training.batch_size"] = cli_overrides["batch_size"]
         if cli_overrides.get("learning_rate") is not None:
             overrides["training.learning_rate"] = cli_overrides["learning_rate"]
+        if cli_overrides.get("weight_decay") is not None:
+            overrides["training.weight_decay"] = cli_overrides["weight_decay"]
+        if cli_overrides.get("num_workers") is not None:
+            overrides["training.num_workers"] = cli_overrides["num_workers"]
+        if cli_overrides.get("pin_memory") is not None:
+            overrides["training.pin_memory"] = cli_overrides["pin_memory"]
+        if cli_overrides.get("train_split") is not None:
+            overrides["data.train_split"] = cli_overrides["train_split"]
+        if cli_overrides.get("augment") is not None:
+            overrides["data.augment"] = cli_overrides["augment"]
+        if cli_overrides.get("image_size") is not None:
+            overrides["data.image_size"] = cli_overrides["image_size"]
 
     config = load_config(config_path, override=overrides if overrides else None)
     return config
@@ -379,6 +448,7 @@ def train_model(
     train_loader,
     num_epochs=15,
     learning_rate=0.001,
+    weight_decay: float = 0.0,
     num_classes: int = NUM_CLASSES,
     config: Optional[Config] = None,
 ):
@@ -399,6 +469,8 @@ def train_model(
                     Default: 15 epochs. Overridden by config if provided.
         learning_rate: Initial learning rate for Adam optimizer.
                        Default: 0.001. Overridden by config if provided.
+        weight_decay: L2 regularization factor applied by the optimizer.
+                  Default: 0.0. Overridden by config if provided.
         num_classes: Number of output classes for loss computation.
                      Default: 2 (background + instrument).
         config: Optional Config object to override training parameters.
@@ -434,6 +506,7 @@ def train_model(
     if config is not None:
         num_epochs = config.training.epochs
         learning_rate = config.training.learning_rate
+        weight_decay = config.training.weight_decay
         num_classes = config.model.num_classes
         device = torch.device(config.hardware.get_device())
         instrument_weight = config.training.class_weights.instrument
@@ -446,7 +519,7 @@ def train_model(
     class_weights = torch.ones(num_classes, dtype=torch.float32, device=device)
     class_weights[1:] = instrument_weight
     criterion = nn.CrossEntropyLoss(weight=class_weights)
-    optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate)
+    optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate, weight_decay=weight_decay)
 
     print(f"\n{'='*70}")
     print(f"Training on device: {device}")
@@ -795,32 +868,65 @@ def main():
     """
 
     args = parse_cli_args()
-    frame_dir = args.frame_dir.resolve()
-    mask_dir = args.mask_dir.resolve()
-    prediction_dir = args.prediction_dir.resolve()
+    cli_overrides = {
+        "epochs": args.epochs,
+        "batch_size": args.batch_size,
+        "learning_rate": args.learning_rate,
+        "weight_decay": args.weight_decay,
+        "num_workers": args.num_workers,
+        "pin_memory": args.pin_memory,
+        "train_split": args.train_split,
+        "augment": args.augment,
+        "image_size": args.image_size,
+    }
+    config = load_training_config(args.config, cli_overrides=cli_overrides)
+
+    frame_dir = (args.frame_dir or Path(config.paths.frame_dir)).resolve()
+    mask_dir = (args.mask_dir or Path(config.paths.mask_dir)).resolve()
+    prediction_dir = (args.prediction_dir or Path(config.paths.predictions_dir)).resolve()
 
     FIGURES_DIR.mkdir(parents=True, exist_ok=True)
     MODELS_DIR.mkdir(parents=True, exist_ok=True)
 
-    seed_everything()
+    seed_everything(config.training.seed)
     data_created = False
     if not args.skip_synthetic:
         data_created = create_synthetic_surgical_frames(frame_dir, mask_dir)
 
-    train_transform = transforms.Compose(
-        [
-            transforms.Resize((256, 256)),
-            transforms.ColorJitter(brightness=0.2, contrast=0.2, saturation=0.1, hue=0.02),
-            transforms.ToTensor(),
-            AdditiveGaussianNoise(std=0.02),
-            transforms.Normalize(mean=IMAGENET_MEAN, std=IMAGENET_STD),
-        ]
-    )
+    image_size = config.data.image_size
+    normalize_mean = config.data.normalize.mean
+    normalize_std = config.data.normalize.std
+    color_jitter = config.augmentation.color_jitter
+
+    if config.data.augment:
+        train_transform = transforms.Compose(
+            [
+                transforms.Resize((image_size, image_size)),
+                transforms.ColorJitter(
+                    brightness=color_jitter.brightness,
+                    contrast=color_jitter.contrast,
+                    saturation=color_jitter.saturation,
+                    hue=color_jitter.hue,
+                ),
+                transforms.ToTensor(),
+                AdditiveGaussianNoise(std=config.augmentation.gaussian_noise_std),
+                transforms.Normalize(mean=normalize_mean, std=normalize_std),
+            ]
+        )
+    else:
+        train_transform = transforms.Compose(
+            [
+                transforms.Resize((image_size, image_size)),
+                transforms.ToTensor(),
+                transforms.Normalize(mean=normalize_mean, std=normalize_std),
+            ]
+        )
+
     eval_transform = transforms.Compose(
         [
-            transforms.Resize((256, 256)),
+            transforms.Resize((image_size, image_size)),
             transforms.ToTensor(),
-            transforms.Normalize(mean=IMAGENET_MEAN, std=IMAGENET_STD),
+            transforms.Normalize(mean=normalize_mean, std=normalize_std),
         ]
     )
 
@@ -838,10 +944,16 @@ def main():
             " data or keep the synthetic set intact."
         )
 
+    if not 0 < config.data.train_split < 1:
+        raise ValueError(
+            "train_split must be a float between 0 and 1 (exclusive). "
+            f"Got {config.data.train_split}."
+        )
+
     rng = np.random.default_rng(DEFAULT_DATA_SEED)
     rng.shuffle(all_frames)
 
-    val_size = max(1, int(round(total_frames * 0.2)))
+    val_size = max(1, int(round(total_frames * (1 - config.data.train_split))))
     train_size = total_frames - val_size
     if train_size == 0:
         train_size = total_frames - 1
@@ -854,7 +966,7 @@ def main():
         frame_dir=str(frame_dir),
         mask_dir=str(mask_dir),
         transform=train_transform,
-        augment=True,
+        augment=config.data.augment,
         file_list=train_frames,
     )
     val_dataset = SurgicalDataset(
@@ -865,7 +977,13 @@ def main():
         file_list=val_frames,
     )
 
-    train_loader = torch.utils.data.DataLoader(train_dataset, batch_size=4, shuffle=True)
+    train_loader = torch.utils.data.DataLoader(
+        train_dataset,
+        batch_size=config.training.batch_size,
+        shuffle=True,
+        num_workers=config.training.num_workers,
+        pin_memory=config.training.pin_memory,
+    )
 
     print("\nDataset Summary:")
     print(f"  - Total frames: {total_frames}")
@@ -874,15 +992,13 @@ def main():
     if not data_created:
         print("  - Note: Existing frames detected; synthetic generation skipped")
 
-    model = InstrumentSegmentationModel(num_classes=NUM_CLASSES)
+    model = InstrumentSegmentationModel(num_classes=config.model.num_classes)
 
     print("\nStarting training...")
     model, losses = train_model(
         model,
         train_loader,
-        num_epochs=15,
-        learning_rate=0.001,
-        num_classes=NUM_CLASSES,
+        config=config,
     )
 
     fig = plt.figure(figsize=(10, 6))
