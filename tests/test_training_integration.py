@@ -78,7 +78,7 @@ class TestTrainingIntegration:
 
         dataloader = DataLoader(dataset, batch_size=2, shuffle=True)
 
-        model = InstrumentSegmentationModel(num_classes=2)
+        model = InstrumentSegmentationModel(num_classes=2, pretrained=False)
         model.train()
 
         optimizer = torch.optim.Adam(model.parameters(), lr=1e-4)
@@ -111,7 +111,7 @@ class TestTrainingIntegration:
         )
 
         dataloader = DataLoader(dataset, batch_size=2)
-        model = InstrumentSegmentationModel(num_classes=2)
+        model = InstrumentSegmentationModel(num_classes=2, pretrained=False)
         criterion = torch.nn.CrossEntropyLoss()
 
         frames, masks = next(iter(dataloader))
@@ -138,7 +138,7 @@ class TestTrainingIntegration:
         )
 
         dataloader = DataLoader(dataset, batch_size=4)
-        model = InstrumentSegmentationModel(num_classes=2)
+        model = InstrumentSegmentationModel(num_classes=2, pretrained=False)
         optimizer = torch.optim.Adam(model.parameters(), lr=1e-3)
         criterion = torch.nn.CrossEntropyLoss()
 
@@ -172,7 +172,7 @@ class TestTrainingIntegration:
         )
 
         dataloader = DataLoader(dataset, batch_size=2)
-        model = InstrumentSegmentationModel(num_classes=2)
+        model = InstrumentSegmentationModel(num_classes=2, pretrained=False)
 
         # Class weights: background=1.0, instrument=3.0 (as in production)
         class_weights = torch.tensor([1.0, 3.0])
@@ -196,7 +196,7 @@ class TestTrainingIntegration:
         )
 
         dataloader = DataLoader(dataset, batch_size=2)
-        model = InstrumentSegmentationModel(num_classes=2)
+        model = InstrumentSegmentationModel(num_classes=2, pretrained=False)
         optimizer = torch.optim.Adam(model.parameters(), lr=1e-3)
         criterion = torch.nn.CrossEntropyLoss()
 
@@ -212,7 +212,7 @@ class TestTrainingIntegration:
         torch.save(model.state_dict(), model_path)
 
         # Load into new model
-        new_model = InstrumentSegmentationModel(num_classes=2)
+        new_model = InstrumentSegmentationModel(num_classes=2, pretrained=False)
         new_model.load_state_dict(torch.load(model_path, weights_only=True))
 
         # Verify outputs match
@@ -299,7 +299,7 @@ class TestTrainingDataPipeline:
         # Use batch_size >= 2 to avoid batch norm issues with single samples
         dataloader = DataLoader(dataset, batch_size=2)
 
-        model = InstrumentSegmentationModel(num_classes=2)
+        model = InstrumentSegmentationModel(num_classes=2, pretrained=False)
         criterion = torch.nn.CrossEntropyLoss()
 
         # Should be able to iterate without errors

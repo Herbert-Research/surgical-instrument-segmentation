@@ -431,7 +431,7 @@ class TestBuildModel:
         """Verify building DeepLabV3 model."""
         from surgical_segmentation.training.cross_validation import build_model
 
-        model = build_model("deeplabv3", num_classes=2)
+        model = build_model("deeplabv3", num_classes=2, pretrained=False)
         assert model is not None
 
     def test_build_unet(self):
@@ -575,7 +575,7 @@ class TestTrainOneEpoch:
         )
 
         # Use DeepLabV3 which returns dict output
-        model = build_model("deeplabv3", num_classes=2)
+        model = build_model("deeplabv3", num_classes=2, pretrained=False)
         device = torch.device("cpu")
         model = model.to(device)
 
@@ -675,7 +675,7 @@ class TestEvaluateModelCV:
         )
 
         # Use DeepLabV3 which returns dict output
-        model = build_model("deeplabv3", num_classes=2)
+        model = build_model("deeplabv3", num_classes=2, pretrained=False)
         device = torch.device("cpu")
         model = model.to(device)
 

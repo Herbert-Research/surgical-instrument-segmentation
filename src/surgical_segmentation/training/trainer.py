@@ -9,6 +9,7 @@ Purpose: Automated surgical instrument segmentation for laparoscopic surgery
 
 import argparse
 import importlib
+import json
 import random
 from pathlib import Path
 from typing import Any, Optional
@@ -55,6 +56,7 @@ MODELS_DIR = Path("outputs/models")
 TRAINING_LOSS_PATH = FIGURES_DIR / "training_loss.png"
 SEGMENTATION_FIG_PATH = FIGURES_DIR / "segmentation_results.png"
 DEFAULT_MODEL_PATH = MODELS_DIR / "instrument_segmentation_model.pth"
+WEIGHTS_MANIFEST_PATH = MODELS_DIR / "pretrained_weights.json"
 
 
 def parse_cli_args() -> argparse.Namespace:
@@ -895,7 +897,20 @@ def main():
     if not data_created:
         print("  - Note: Existing frames detected; synthetic generation skipped")
 
-    model = InstrumentSegmentationModel(num_classes=config.model.num_classes)
+    model = InstrumentSegmentationModel(
+        num_classes=config.model.num_classes,
+        pretrained=config.model.pretrained,
+    )
+
+    weights_manifest = {
+        "architecture": config.model.architecture,
+        "pretrained": model.pretrained,
+        "weights": model.weights_metadata,
+    }
+    WEIGHTS_MANIFEST_PATH.write_text(
+        json.dumps(weights_manifest, indent=2),
+        encoding="utf-8",
+    )
 
     print("\nStarting training...")
     model, losses = train_model(

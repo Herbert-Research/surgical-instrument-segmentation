@@ -9,6 +9,8 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
+    env:
+      SURGICAL_SEGMENTATION_DISABLE_PRETRAINED: "1"
     strategy:
       matrix:
         python-version: ["3.9", "3.10", "3.11"]

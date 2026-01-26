@@ -92,7 +92,7 @@ class TestDeepLabV3:
 
     def test_forward_pass_shape(self, sample_image_tensor):
         """Verify output shape matches input spatial dimensions."""
-        model = InstrumentSegmentationModel(num_classes=2)
+        model = InstrumentSegmentationModel(num_classes=2, pretrained=False)
         model.eval()  # Required for BatchNorm with small batch sizes
         output = model(sample_image_tensor)
 
@@ -100,7 +100,7 @@ class TestDeepLabV3:
 
     def test_forward_pass_no_nan(self, sample_image_tensor):
         """Verify forward pass produces no NaN values."""
-        model = InstrumentSegmentationModel(num_classes=2)
+        model = InstrumentSegmentationModel(num_classes=2, pretrained=False)
         model.eval()  # Required for BatchNorm with small batch sizes
         output = model(sample_image_tensor)
 

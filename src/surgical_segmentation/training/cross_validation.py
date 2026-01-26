@@ -216,11 +216,15 @@ def build_dataloaders(
     return train_loader, val_loader
 
 
-def build_model(model_class: str, num_classes: int = NUM_CLASSES) -> nn.Module:
+def build_model(
+    model_class: str,
+    num_classes: int = NUM_CLASSES,
+    pretrained: bool = True,
+) -> nn.Module:
     """Instantiate model by name."""
 
     if model_class == "deeplabv3":
-        model = InstrumentSegmentationModel(num_classes=num_classes)
+        model = InstrumentSegmentationModel(num_classes=num_classes, pretrained=pretrained)
     elif model_class == "unet":
         model = UNet(n_channels=3, n_classes=num_classes, bilinear=True)
     else:

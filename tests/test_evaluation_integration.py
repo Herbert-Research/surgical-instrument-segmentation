@@ -177,7 +177,7 @@ class TestModelInference:
 
     def test_model_produces_valid_predictions(self, tmp_path):
         """Verify model produces valid segmentation masks."""
-        model = InstrumentSegmentationModel(num_classes=2)
+        model = InstrumentSegmentationModel(num_classes=2, pretrained=False)
         model.eval()
 
         # Create random input
@@ -198,7 +198,7 @@ class TestModelInference:
 
     def test_model_batch_inference(self):
         """Verify model handles batched inference correctly."""
-        model = InstrumentSegmentationModel(num_classes=2)
+        model = InstrumentSegmentationModel(num_classes=2, pretrained=False)
         model.eval()
 
         batch_size = 8
@@ -216,7 +216,7 @@ class TestModelInference:
 
     def test_model_deterministic_in_eval_mode(self):
         """Verify model produces consistent outputs in eval mode."""
-        model = InstrumentSegmentationModel(num_classes=2)
+        model = InstrumentSegmentationModel(num_classes=2, pretrained=False)
         model.eval()
 
         input_tensor = torch.randn(1, 3, 256, 256)

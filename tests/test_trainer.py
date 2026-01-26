@@ -308,7 +308,7 @@ class TestTrainModelFunction:
             dataset = SurgicalDataset(str(frame_dir), str(mask_dir), transform=transform)
             dataloader = DataLoader(dataset, batch_size=2)
 
-            model = InstrumentSegmentationModel(num_classes=2)
+            model = InstrumentSegmentationModel(num_classes=2, pretrained=False)
 
             trained_model, losses = train_model(
                 model, dataloader, num_epochs=2, learning_rate=0.001
@@ -435,7 +435,7 @@ class TestEvaluateModel:
         )
 
         dataset = SurgicalDataset(str(frame_dir), str(mask_dir), transform=transform)
-        model = InstrumentSegmentationModel(num_classes=2)
+        model = InstrumentSegmentationModel(num_classes=2, pretrained=False)
 
         metrics = evaluate_model(model, dataset, num_visual_samples=0)
 
@@ -478,7 +478,7 @@ class TestEvaluateModel:
         )
 
         dataset = SurgicalDataset(str(frame_dir), str(mask_dir), transform=transform)
-        model = InstrumentSegmentationModel(num_classes=2)
+        model = InstrumentSegmentationModel(num_classes=2, pretrained=False)
 
         evaluate_model(model, dataset, num_visual_samples=0, prediction_dir=pred_dir)
 
@@ -561,7 +561,7 @@ class TestTrainModelWithConfig:
         config = Config()
         config.training.epochs = 1
 
-        model = InstrumentSegmentationModel(num_classes=2)
+        model = InstrumentSegmentationModel(num_classes=2, pretrained=False)
         trained_model, losses = train_model(model, dataloader, config=config)
 
         assert len(losses) == 1
