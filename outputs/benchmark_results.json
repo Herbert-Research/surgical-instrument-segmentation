@@ -6,23 +6,44 @@
     "cuda_version": "12.1",
     "gpu_name": "NVIDIA GeForce GTX 1050",
     "gpu_memory_gb": 2.0,
-    "timestamp": "2025-12-09T15:07:28.185988"
+    "timestamp": "2026-01-26T21:04:01.176990"
+  },
+  "provenance": {
+    "git_sha": "be3590b939590fde0ff39838d66a770a6e51a23f",
+    "model_checksum": null,
+    "dataset_manifest_hash": null,
+    "config_hash": null
   },
   "results": [
     {
       "device": "cuda",
       "input_size": 256,
       "batch_size": 1,
-      "num_iterations": 10,
-      "mean_latency_ms": 110.79191999999944,
-      "std_latency_ms": 7.016651586732376,
-      "min_latency_ms": 99.88470000000049,
-      "max_latency_ms": 122.7862999999978,
-      "median_latency_ms": 109.01780000000016,
-      "p95_latency_ms": 121.4348599999985,
-      "p99_latency_ms": 122.51601199999794,
-      "throughput_fps": 9.025928966661153,
-      "throughput_images_per_sec": 9.025928966661153
+      "num_iterations": 100,
+      "mean_latency_ms": 111.83575300000001,
+      "std_latency_ms": 15.017640180251012,
+      "min_latency_ms": 96.11130000000045,
+      "max_latency_ms": 157.81120000000115,
+      "median_latency_ms": 105.25784999999921,
+      "p95_latency_ms": 137.66299999999774,
+      "p99_latency_ms": 157.08850000000038,
+      "throughput_fps": 8.94168432880315,
+      "throughput_images_per_sec": 8.94168432880315
+    },
+    {
+      "device": "cpu",
+      "input_size": 256,
+      "batch_size": 1,
+      "num_iterations": 100,
+      "mean_latency_ms": 968.2562350000002,
+      "std_latency_ms": 101.37705398880681,
+      "min_latency_ms": 842.1600000000069,
+      "max_latency_ms": 1512.7384999999977,
+      "median_latency_ms": 938.7542999999994,
+      "p95_latency_ms": 1108.0356849999957,
+      "p99_latency_ms": 1202.5744700000075,
+      "throughput_fps": 1.0327844674297397,
+      "throughput_images_per_sec": 1.0327844674297397
     }
   ]
 }

@@ -21,7 +21,9 @@ Author: Maximilian Herbert Dressler
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
+import subprocess
 import sys
 import time
 from dataclasses import asdict, dataclass
@@ -71,6 +73,20 @@ class SystemInfo:
     timestamp: str
 
 
+@dataclass
+class ProvenanceInfo:
+    """Provenance metadata for benchmark results."""
+
+    git_sha: str | None
+    model_checksum: str | None
+    dataset_manifest_hash: str | None
+    config_hash: str | None
+
+    def to_dict(self) -> dict[str, str | None]:
+        """Convert to dictionary for JSON serialization."""
+        return asdict(self)
+
+
 def get_system_info() -> SystemInfo:
     """Collect system information for benchmark reproducibility."""
     import torch
@@ -92,6 +108,74 @@ def get_system_info() -> SystemInfo:
         gpu_name=gpu_name,
         gpu_memory_gb=round(gpu_memory_gb, 2) if gpu_memory_gb else None,
         timestamp=datetime.now().isoformat(),
+    )
+
+
+def compute_sha256(file_path: Path) -> str:
+    """Compute SHA256 hash for a file.
+
+    Args:
+        file_path: Path to the file to hash.
+
+    Returns:
+        Hex-encoded SHA256 hash string.
+
+    Raises:
+        FileNotFoundError: If the file does not exist.
+    """
+    sha256 = hashlib.sha256()
+    with open(file_path, "rb") as f:
+        for chunk in iter(lambda: f.read(1024 * 1024), b""):
+            sha256.update(chunk)
+    return sha256.hexdigest()
+
+
+def get_git_sha() -> str | None:
+    """Get current git SHA if available.
+
+    Returns:
+        Git SHA string or None if not available.
+    """
+    try:
+        result = subprocess.run(
+            ["git", "rev-parse", "HEAD"],
+            check=True,
+            capture_output=True,
+            text=True,
+        )
+        return result.stdout.strip() or None
+    except (subprocess.SubprocessError, FileNotFoundError):
+        return None
+
+
+def collect_provenance(
+    model_path: Path | None,
+    dataset_manifest_path: Path | None,
+    config_path: Path | None,
+) -> ProvenanceInfo:
+    """Collect provenance metadata for benchmark output.
+
+    Args:
+        model_path: Path to model weights if provided.
+        dataset_manifest_path: Path to dataset manifest if provided.
+        config_path: Path to config file if provided.
+
+    Returns:
+        ProvenanceInfo with available hashes and git SHA.
+    """
+    model_checksum = compute_sha256(model_path) if model_path and model_path.exists() else None
+    dataset_manifest_hash = (
+        compute_sha256(dataset_manifest_path)
+        if dataset_manifest_path and dataset_manifest_path.exists()
+        else None
+    )
+    config_hash = compute_sha256(config_path) if config_path and config_path.exists() else None
+
+    return ProvenanceInfo(
+        git_sha=get_git_sha(),
+        model_checksum=model_checksum,
+        dataset_manifest_hash=dataset_manifest_hash,
+        config_hash=config_hash,
     )
 
 
@@ -269,12 +353,14 @@ def print_benchmark_report(
 def save_benchmark_results(
     results: list[BenchmarkResult],
     system_info: SystemInfo,
+    provenance: ProvenanceInfo,
     output_path: Path,
 ) -> None:
     """Save benchmark results to JSON file."""
 
     output_data = {
         "system_info": asdict(system_info),
+        "provenance": provenance.to_dict(),
         "results": [r.to_dict() for r in results],
     }
 
@@ -354,6 +440,20 @@ Examples:
     )
 
     parser.add_argument(
+        "--dataset-manifest",
+        type=Path,
+        default=None,
+        help="Path to dataset manifest JSON for provenance hashing (optional)",
+    )
+
+    parser.add_argument(
+        "--config-path",
+        type=Path,
+        default=None,
+        help="Path to config file for provenance hashing (optional)",
+    )
+
+    parser.add_argument(
         "--num-classes",
         type=int,
         default=2,
@@ -378,6 +478,11 @@ def main() -> None:
 
     # Collect system information
     system_info = get_system_info()
+    provenance = collect_provenance(
+        model_path=args.model_path,
+        dataset_manifest_path=args.dataset_manifest,
+        config_path=args.config_path,
+    )
 
     # Determine devices to benchmark
     if args.devices:
@@ -447,7 +552,7 @@ def main() -> None:
 
     # Save results if requested
     if args.output:
-        save_benchmark_results(results, system_info, args.output)
+        save_benchmark_results(results, system_info, provenance, args.output)
 
 
 if __name__ == "__main__":
