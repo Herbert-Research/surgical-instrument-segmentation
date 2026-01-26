@@ -352,7 +352,7 @@ class TestDatasetEdgeCases:
         mask[100:150, 100:150] = 31
 
         Image.fromarray(frame).save(frame_dir / "frame_00000.png")
-        Image.fromarray(mask, mode="L").save(mask_dir / "mask_00000.png")
+        Image.fromarray(mask).convert("L").save(mask_dir / "mask_00000.png")
 
         dataset = SurgicalDataset(str(frame_dir), str(mask_dir))
 

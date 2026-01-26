@@ -43,7 +43,7 @@ class TestPairedTTest:
     def test_returns_float_types(self):
         """Verify return types are Python floats."""
         scores_a = [0.8, 0.85, 0.9]
-        scores_b = [0.75, 0.8, 0.85]
+        scores_b = [0.74, 0.8, 0.86]
 
         t_stat, p_value, is_sig = paired_ttest(scores_a, scores_b)
 
@@ -64,7 +64,8 @@ class TestPairedTTest:
         # Scores with p-value around 0.08
         np.random.seed(42)
         scores_a = np.random.normal(0.8, 0.05, 10).tolist()
-        scores_b = (np.array(scores_a) - 0.02).tolist()
+        deltas = np.linspace(0.015, 0.025, num=10)
+        scores_b = (np.array(scores_a) - deltas).tolist()
 
         # At alpha=0.05, may not be significant
         _, p_value, _ = paired_ttest(scores_a, scores_b, alpha=0.05)
@@ -81,8 +82,8 @@ class TestPairedTTest:
 
     def test_positive_t_stat_when_a_greater(self):
         """Verify positive t-stat when scores_a > scores_b."""
-        scores_a = [0.9, 0.92, 0.91, 0.93, 0.89]
-        scores_b = [0.7, 0.72, 0.71, 0.73, 0.69]
+        scores_a = [0.9, 0.92, 0.91, 0.93, 0.88]
+        scores_b = [0.7, 0.73, 0.69, 0.74, 0.68]
 
         t_stat, _, _ = paired_ttest(scores_a, scores_b)
 
@@ -90,8 +91,8 @@ class TestPairedTTest:
 
     def test_negative_t_stat_when_b_greater(self):
         """Verify negative t-stat when scores_b > scores_a."""
-        scores_a = [0.7, 0.72, 0.71, 0.73, 0.69]
-        scores_b = [0.9, 0.92, 0.91, 0.93, 0.89]
+        scores_a = [0.7, 0.73, 0.69, 0.74, 0.68]
+        scores_b = [0.9, 0.92, 0.91, 0.93, 0.88]
 
         t_stat, _, _ = paired_ttest(scores_a, scores_b)
 

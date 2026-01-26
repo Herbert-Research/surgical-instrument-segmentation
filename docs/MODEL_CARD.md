@@ -5,7 +5,7 @@
 | Property | Value |
 |----------|-------|
 | **Model Name** | InstrumentSegmentationModel |
-| **Architecture** | DeepLabV3+ with ResNet-50 backbone |
+| **Architecture** | DeepLabV3 with ResNet-50 backbone |
 | **Version** | 0.1.0 |
 | **Release Date** | December 2024 |
 | **License** | MIT |
@@ -15,7 +15,7 @@
 
 ### Model Architecture
 
-The model uses a DeepLabV3+ architecture with the following specifications:
+The model uses a DeepLabV3 architecture with the following specifications:
 
 - **Backbone**: ResNet-50 (pretrained on ImageNet)
 - **Output Stride**: 16
@@ -323,7 +323,7 @@ If you use this model in your research, please cite:
 ### Related Publications
 
 - CholecSeg8k Dataset: Hong et al., "CholecSeg8k: A Semantic Segmentation Dataset for Laparoscopic Cholecystectomy Based on Cholec80"
-- DeepLabV3+: Chen et al., "Encoder-Decoder with Atrous Separable Convolution for Semantic Image Segmentation"
+- DeepLabV3: Chen et al., "Rethinking Atrous Convolution for Semantic Image Segmentation"
 
 ---
 

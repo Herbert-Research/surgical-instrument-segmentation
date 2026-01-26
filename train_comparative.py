@@ -287,8 +287,8 @@ def train_fold(
     train_transform = transforms.Compose(
         [
             transforms.Resize((256, 256)),
-            transforms.ColorJitter(brightness=0.2, contrast=0.2, saturation=0.1, hue=0.02),
             transforms.ToTensor(),
+            transforms.ColorJitter(brightness=0.2, contrast=0.2, saturation=0.1, hue=0.02),
             transforms.Normalize(mean=IMAGENET_MEAN, std=IMAGENET_STD),
         ]
     )
@@ -663,8 +663,8 @@ def main() -> None:
         train_transform = transforms.Compose(
             [
                 transforms.Resize((256, 256)),
-                transforms.ColorJitter(brightness=0.2, contrast=0.2, saturation=0.1, hue=0.02),
                 transforms.ToTensor(),
+                transforms.ColorJitter(brightness=0.2, contrast=0.2, saturation=0.1, hue=0.02),
                 transforms.Normalize(mean=IMAGENET_MEAN, std=IMAGENET_STD),
             ]
         )
