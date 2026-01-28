@@ -4,6 +4,8 @@ These tests verify the complete training loop works end-to-end,
 from data loading through model optimization.
 """
 
+from typing import cast
+
 import numpy as np
 import pytest
 import torch
@@ -325,11 +327,13 @@ class TestTrainingWithAugmentation:
 
         for idx in range(min(5, len(dataset))):
             frame, mask = dataset[idx]
+            frame_tensor = cast(torch.Tensor, frame)
+            mask_tensor = cast(torch.Tensor, mask)
 
-            assert frame.shape == (3, 256, 256), f"Frame shape mismatch at idx {idx}"
-            assert mask.shape == (256, 256), f"Mask shape mismatch at idx {idx}"
-            assert not torch.isnan(frame).any(), f"Frame contains NaN at idx {idx}"
-            assert mask.dtype == torch.long, f"Mask should be long tensor at idx {idx}"
+            assert frame_tensor.shape == (3, 256, 256), f"Frame shape mismatch at idx {idx}"
+            assert mask_tensor.shape == (256, 256), f"Mask shape mismatch at idx {idx}"
+            assert not torch.isnan(frame_tensor).any(), f"Frame contains NaN at idx {idx}"
+            assert mask_tensor.dtype == torch.long, f"Mask should be long tensor at idx {idx}"
 
     def test_augmentation_is_stochastic(self, synthetic_dataset, training_transform):
         """Verify augmentation produces different outputs on repeated access."""
@@ -343,7 +347,7 @@ class TestTrainingWithAugmentation:
         )
 
         # Access same sample multiple times
-        frames = [dataset[0][0] for _ in range(5)]
+        frames = [cast(torch.Tensor, dataset[0][0]) for _ in range(5)]
 
         # At least some should be different (stochastic augmentation)
         all_same = all(torch.allclose(frames[0], f) for f in frames[1:])

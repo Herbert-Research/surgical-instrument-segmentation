@@ -96,7 +96,8 @@ def get_system_info() -> SystemInfo:
     gpu_memory_gb = None
 
     if torch.cuda.is_available():
-        cuda_version = torch.version.cuda
+        torch_version = getattr(torch, "version", None)
+        cuda_version = getattr(torch_version, "cuda", None) if torch_version else None
         gpu_name = torch.cuda.get_device_name(0)
         gpu_memory_gb = torch.cuda.get_device_properties(0).total_memory / (1024**3)
 
@@ -247,7 +248,7 @@ def benchmark_inference(
     print("done")
 
     latencies = np.array(latencies)
-    mean_latency = np.mean(latencies)
+    mean_latency = float(np.mean(latencies))
 
     return BenchmarkResult(
         device=device,
@@ -261,8 +262,8 @@ def benchmark_inference(
         median_latency_ms=float(np.median(latencies)),
         p95_latency_ms=float(np.percentile(latencies, 95)),
         p99_latency_ms=float(np.percentile(latencies, 99)),
-        throughput_fps=1000.0 / mean_latency,
-        throughput_images_per_sec=(1000.0 / mean_latency) * batch_size,
+        throughput_fps=float(1000.0 / mean_latency),
+        throughput_images_per_sec=float((1000.0 / mean_latency) * batch_size),
     )
 
 
