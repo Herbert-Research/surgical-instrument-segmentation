@@ -1,0 +1,29 @@
+{
+  "seed": 42,
+  "train_split": 0.8,
+  "total_frames": 20,
+  "train_frames": [
+    "video01_000015_frame.png",
+    "video01_000009_frame.png",
+    "video01_000014_frame.png",
+    "video01_000007_frame.png",
+    "video01_000012_frame.png",
+    "video01_000010_frame.png",
+    "video01_000006_frame.png",
+    "video01_000019_frame.png",
+    "video01_000003_frame.png",
+    "video01_000000_frame.png",
+    "video01_000016_frame.png",
+    "video01_000005_frame.png",
+    "video01_000011_frame.png",
+    "video01_000018_frame.png",
+    "video01_000002_frame.png",
+    "video01_000004_frame.png"
+  ],
+  "val_frames": [
+    "video01_000017_frame.png",
+    "video01_000001_frame.png",
+    "video01_000013_frame.png",
+    "video01_000008_frame.png"
+  ]
+}

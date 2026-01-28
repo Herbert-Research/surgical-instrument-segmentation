@@ -1,0 +1,4 @@
+Notes:
+- Source masks in datasets/Cholec80/video01_test contain binary 0/255 values.
+- For this run, masks were converted to 0/1 in outputs/run_cholecseg_video01_test_20260126_223222/masks_binary.
+- Conversion rule: instrument pixels = {255, 31, 32, 1} -> 1; background -> 0.

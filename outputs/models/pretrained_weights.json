@@ -1,0 +1,11 @@
+{
+  "architecture": "deeplabv3_resnet50",
+  "pretrained": true,
+  "weights": {
+    "pretrained": true,
+    "weights_name": "COCO_WITH_VOC_LABELS_V1",
+    "source_url": "https://download.pytorch.org/models/deeplabv3_resnet50_coco-cd0a2569.pth",
+    "sha256": "cd0a25694c4a0f7106b38f4938bf90a874f2f241cc410b8f63c7024399538f06",
+    "local_path": "C:\\Users\\m4rti\\.cache\\torch\\hub\\checkpoints\\deeplabv3_resnet50_coco-cd0a2569.pth"
+  }
+}

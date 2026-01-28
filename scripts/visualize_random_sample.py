@@ -15,6 +15,7 @@ import torch
 from PIL import Image
 from torchvision import transforms
 
+from surgical_segmentation.evaluation.metrics import compute_all_metrics
 from surgical_segmentation.models import InstrumentSegmentationModel
 
 # Constants
@@ -144,21 +145,13 @@ def generate_visualization(
             remapped[instrument_mask] = 1
             true_mask = remapped
 
-            # Calculate metrics for this frame
-            true_positive = np.logical_and(pred_mask == 1, true_mask == 1).sum()
-            false_positive = np.logical_and(pred_mask == 1, true_mask == 0).sum()
-            false_negative = np.logical_and(pred_mask == 0, true_mask == 1).sum()
-
-            iou = (
-                true_positive / (true_positive + false_positive + false_negative)
-                if (true_positive + false_positive + false_negative) > 0
-                else 0.0
+            # Calculate metrics for this frame using canonical implementation
+            metrics = compute_all_metrics(
+                torch.from_numpy(pred_mask),
+                torch.from_numpy(true_mask),
             )
-            dice = (
-                2 * true_positive / (2 * true_positive + false_positive + false_negative)
-                if (2 * true_positive + false_positive + false_negative) > 0
-                else 0.0
-            )
+            iou = metrics["iou"]
+            dice = metrics["dice"]
 
             # Denormalize frame for display
             frame_np = frame_tensor.squeeze().cpu().numpy().transpose(1, 2, 0)

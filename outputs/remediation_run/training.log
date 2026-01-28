@@ -1,0 +1,7 @@
+Training log was not captured to file during this run.
+
+The pipeline was executed via:
+  python -m surgical_segmentation.training.trainer --config config/default.yaml
+
+To produce a full stdout/stderr log, re-run the command with output capture and
+overwrite this file with the terminal output.

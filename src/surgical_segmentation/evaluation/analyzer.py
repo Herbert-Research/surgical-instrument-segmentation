@@ -200,7 +200,7 @@ def run_synthetic_analysis(args: argparse.Namespace) -> None:
 
     # 1. Confusion Matrix
     ax1 = fig.add_subplot(gs[0, 0])
-    cm = binary_confusion_matrix(true_labels, pred_labels)
+    cm = confusion_matrix_multiclass(true_labels, pred_labels, num_classes=2)
     sns.heatmap(cm, annot=True, fmt="d", cmap="Blues", ax=ax1)
     ax1.set_title("Confusion Matrix", fontweight="bold")
     ax1.set_ylabel("True Label")
@@ -237,9 +237,10 @@ def run_synthetic_analysis(args: argparse.Namespace) -> None:
 
     # Calculate comprehensive metrics
     tn, fp, fn, tp = cm.ravel()
-    accuracy = (tp + tn) / (tp + tn + fp + fn)
-    precision_val = tp / (tp + fp) if (tp + fp) > 0 else 0
-    recall_val = tp / (tp + fn) if (tp + fn) > 0 else 0
+    metrics = compute_metrics_from_cm(cm)
+    accuracy = metrics["accuracy"]
+    precision_val = float(metrics["precision"][1])
+    recall_val = float(metrics["recall"][1])
     f1 = (
         2 * (precision_val * recall_val) / (precision_val + recall_val)
         if (precision_val + recall_val) > 0

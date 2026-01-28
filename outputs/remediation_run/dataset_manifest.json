@@ -1,0 +1,208 @@
+{
+  "frame_dir": "data/sample_frames",
+  "mask_dir": "data/masks",
+  "file_count": 40,
+  "manifest_hash": "e27806c317c8c5567456903e8cf6aa77437fd43256f58935de672f63c967044b",
+  "files": [
+    {
+      "path": "data/sample_frames/frame_000.png",
+      "sha256": "411344b111736aee883504cfa86d16297d2a9b926a710ce975cc3f6bc8fcaf15",
+      "bytes": 787328
+    },
+    {
+      "path": "data/sample_frames/frame_001.png",
+      "sha256": "499c0d3bbc85b85e51c8a6c066019965816945e22bfcd5e019d5fe23e2e159c0",
+      "bytes": 788118
+    },
+    {
+      "path": "data/sample_frames/frame_002.png",
+      "sha256": "9ecf5a0df8c6c76a061d34a19d4b04f8e01f77b8d40efd7848cc6e710fc190e8",
+      "bytes": 788406
+    },
+    {
+      "path": "data/sample_frames/frame_003.png",
+      "sha256": "7e0b3866b9af157a81682f231733ff61df57ee628f64a5e3bade46d22840c8ce",
+      "bytes": 788214
+    },
+    {
+      "path": "data/sample_frames/frame_004.png",
+      "sha256": "fad96d3d090b759c4d905c96e2c987ed3ee085fc31cd33c8b5b3589a0e0e1f73",
+      "bytes": 788044
+    },
+    {
+      "path": "data/sample_frames/frame_005.png",
+      "sha256": "e5993e09b6784efc8309371af8a93253c5b40aee4e883ca71f3199961d6c9ba1",
+      "bytes": 788082
+    },
+    {
+      "path": "data/sample_frames/frame_006.png",
+      "sha256": "75c758a2a41d72b1001a97e2e98c375da312dcbe89de9ddfc3058b8fcd330224",
+      "bytes": 786463
+    },
+    {
+      "path": "data/sample_frames/frame_007.png",
+      "sha256": "34a9cc0c1b65c9bdad267aeda65c05e996a2673043e866fd1d5febee90714d0f",
+      "bytes": 788340
+    },
+    {
+      "path": "data/sample_frames/frame_008.png",
+      "sha256": "ec8e73701a854f90ab43e2d195eef260f6858adda17617233461289313a0bf4c",
+      "bytes": 788344
+    },
+    {
+      "path": "data/sample_frames/frame_009.png",
+      "sha256": "552b766df251a3da85d6767a1bb4b51ec908cf53e621892d1c75cc71fb40d31f",
+      "bytes": 772044
+    },
+    {
+      "path": "data/sample_frames/frame_010.png",
+      "sha256": "3cc5e8f1f7bb8a2b119f3f51b00875a03442792c12375fe84708d7f773cc66ea",
+      "bytes": 773075
+    },
+    {
+      "path": "data/sample_frames/frame_011.png",
+      "sha256": "07a7f3b59aa88d89ad2718f20251235f01d53ddb1d6dc9dc49aef5cc1ca6e11b",
+      "bytes": 787115
+    },
+    {
+      "path": "data/sample_frames/frame_012.png",
+      "sha256": "829d9e8f803d21df99509e740ea53b1458e44d54114f1a4ecb3c5024a7916ece",
+      "bytes": 794261
+    },
+    {
+      "path": "data/sample_frames/frame_013.png",
+      "sha256": "ea4d5c3aaee0601a6d6ce1bd2daacaef59cbe9fdb6caebf8e83d702e0f7e17ae",
+      "bytes": 793795
+    },
+    {
+      "path": "data/sample_frames/frame_014.png",
+      "sha256": "920af168e25d0922a3d8208b5b856e5dc8db475920ac3accfdfe7a29c96cab71",
+      "bytes": 794339
+    },
+    {
+      "path": "data/sample_frames/frame_015.png",
+      "sha256": "d6424e2877db35296ff556b31b225a02ee9e560afd8784e2312024d66e9f8708",
+      "bytes": 803520
+    },
+    {
+      "path": "data/sample_frames/frame_016.png",
+      "sha256": "38b6e89572db44cda620e22a5f8cc0b1df29f92df28f14608c7aef3ce6ba4af0",
+      "bytes": 804088
+    },
+    {
+      "path": "data/sample_frames/frame_017.png",
+      "sha256": "5c336ce8fa8e870570eaa5cb1ce69416638faa73daf7e369d5758e2e0e7d886a",
+      "bytes": 804608
+    },
+    {
+      "path": "data/sample_frames/frame_018.png",
+      "sha256": "454eeffdb0453f10c4b774cd5a307890e43b14acdf6ee62e7856f17f02da891e",
+      "bytes": 782944
+    },
+    {
+      "path": "data/sample_frames/frame_019.png",
+      "sha256": "c7ca63705832ea0403b976a0ae97e22fc81a8f835241737f7bb86548173c3d1e",
+      "bytes": 800526
+    },
+    {
+      "path": "data/masks/mask_000.png",
+      "sha256": "29641cbe27b1e8c4ed006854a1784dbb8322bec0f7d771b6524419408096c964",
+      "bytes": 1935
+    },
+    {
+      "path": "data/masks/mask_001.png",
+      "sha256": "29641cbe27b1e8c4ed006854a1784dbb8322bec0f7d771b6524419408096c964",
+      "bytes": 1935
+    },
+    {
+      "path": "data/masks/mask_002.png",
+      "sha256": "29641cbe27b1e8c4ed006854a1784dbb8322bec0f7d771b6524419408096c964",
+      "bytes": 1935
+    },
+    {
+      "path": "data/masks/mask_003.png",
+      "sha256": "29641cbe27b1e8c4ed006854a1784dbb8322bec0f7d771b6524419408096c964",
+      "bytes": 1935
+    },
+    {
+      "path": "data/masks/mask_004.png",
+      "sha256": "29641cbe27b1e8c4ed006854a1784dbb8322bec0f7d771b6524419408096c964",
+      "bytes": 1935
+    },
+    {
+      "path": "data/masks/mask_005.png",
+      "sha256": "29641cbe27b1e8c4ed006854a1784dbb8322bec0f7d771b6524419408096c964",
+      "bytes": 1935
+    },
+    {
+      "path": "data/masks/mask_006.png",
+      "sha256": "29641cbe27b1e8c4ed006854a1784dbb8322bec0f7d771b6524419408096c964",
+      "bytes": 1935
+    },
+    {
+      "path": "data/masks/mask_007.png",
+      "sha256": "29641cbe27b1e8c4ed006854a1784dbb8322bec0f7d771b6524419408096c964",
+      "bytes": 1935
+    },
+    {
+      "path": "data/masks/mask_008.png",
+      "sha256": "29641cbe27b1e8c4ed006854a1784dbb8322bec0f7d771b6524419408096c964",
+      "bytes": 1935
+    },
+    {
+      "path": "data/masks/mask_009.png",
+      "sha256": "29641cbe27b1e8c4ed006854a1784dbb8322bec0f7d771b6524419408096c964",
+      "bytes": 1935
+    },
+    {
+      "path": "data/masks/mask_010.png",
+      "sha256": "29641cbe27b1e8c4ed006854a1784dbb8322bec0f7d771b6524419408096c964",
+      "bytes": 1935
+    },
+    {
+      "path": "data/masks/mask_011.png",
+      "sha256": "29641cbe27b1e8c4ed006854a1784dbb8322bec0f7d771b6524419408096c964",
+      "bytes": 1935
+    },
+    {
+      "path": "data/masks/mask_012.png",
+      "sha256": "75c68d1086f2250e52b19a7d6384c41742a12c7f6d63dc244e718977a44cd8e4",
+      "bytes": 1660
+    },
+    {
+      "path": "data/masks/mask_013.png",
+      "sha256": "75c68d1086f2250e52b19a7d6384c41742a12c7f6d63dc244e718977a44cd8e4",
+      "bytes": 1660
+    },
+    {
+      "path": "data/masks/mask_014.png",
+      "sha256": "75c68d1086f2250e52b19a7d6384c41742a12c7f6d63dc244e718977a44cd8e4",
+      "bytes": 1660
+    },
+    {
+      "path": "data/masks/mask_015.png",
+      "sha256": "45e945d98ded38001430be13601895981708846604f9db9184b3b6af1dd62402",
+      "bytes": 1159
+    },
+    {
+      "path": "data/masks/mask_016.png",
+      "sha256": "45e945d98ded38001430be13601895981708846604f9db9184b3b6af1dd62402",
+      "bytes": 1159
+    },
+    {
+      "path": "data/masks/mask_017.png",
+      "sha256": "45e945d98ded38001430be13601895981708846604f9db9184b3b6af1dd62402",
+      "bytes": 1159
+    },
+    {
+      "path": "data/masks/mask_018.png",
+      "sha256": "45e945d98ded38001430be13601895981708846604f9db9184b3b6af1dd62402",
+      "bytes": 1159
+    },
+    {
+      "path": "data/masks/mask_019.png",
+      "sha256": "45e945d98ded38001430be13601895981708846604f9db9184b3b6af1dd62402",
+      "bytes": 1159
+    }
+  ]
+}

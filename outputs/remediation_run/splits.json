@@ -1,0 +1,29 @@
+{
+  "seed": 42,
+  "train_split": 0.8,
+  "total_frames": 20,
+  "train_frames": [
+    "frame_015.png",
+    "frame_009.png",
+    "frame_014.png",
+    "frame_007.png",
+    "frame_012.png",
+    "frame_010.png",
+    "frame_006.png",
+    "frame_019.png",
+    "frame_003.png",
+    "frame_000.png",
+    "frame_016.png",
+    "frame_005.png",
+    "frame_011.png",
+    "frame_018.png",
+    "frame_002.png",
+    "frame_004.png"
+  ],
+  "val_frames": [
+    "frame_017.png",
+    "frame_001.png",
+    "frame_013.png",
+    "frame_008.png"
+  ]
+}
